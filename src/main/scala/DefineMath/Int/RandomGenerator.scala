@@ -1,4 +1,4 @@
-package Math.Int
+package DefineMath.Int
 import scala.util.Random
 import spinal.core._
 import spinal.lib._

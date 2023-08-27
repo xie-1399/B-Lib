@@ -1,4 +1,4 @@
-package Sim
+package DefineSim
 
 import spinal.core._
 import spinal.core.sim._

@@ -1,4 +1,4 @@
-package Sim
+package DefineSim
 
 // a way to use vcs or Verilator
 

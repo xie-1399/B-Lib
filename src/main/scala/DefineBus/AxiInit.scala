@@ -1,4 +1,4 @@
-package Bus
+package DefineBus
 
 import spinal.lib.bus.amba4.axi._
 import spinal.core.sim._

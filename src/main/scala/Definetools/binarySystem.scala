@@ -1,4 +1,4 @@
-package tools
+package Definetools
 
 import spinal.core.BitCount
 import spinal.lib._
