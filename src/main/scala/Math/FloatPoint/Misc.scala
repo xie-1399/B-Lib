@@ -1,4 +1,4 @@
-package lib.Math.FloatPoint
+package Math.FloatPoint
 
 import java.lang.Float._
 import java.lang.Double._

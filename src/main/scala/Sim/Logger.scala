@@ -1,4 +1,4 @@
-package lib.Sim
+package Sim
 
 import java.io._
 import java.text._

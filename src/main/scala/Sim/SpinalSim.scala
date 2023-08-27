@@ -1,4 +1,4 @@
-package lib.Sim
+package Sim
 
 import spinal.core._
 import spinal.core.sim._

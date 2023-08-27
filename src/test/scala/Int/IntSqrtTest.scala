@@ -1,4 +1,4 @@
-package lib.Int
+package Int
 
 import lib.Sim.SpinalSim
 import lib.Math.Int.IntSqrt

@@ -1,4 +1,4 @@
-package lib.Bus
+package Bus
 
 import spinal.core._
 import spinal.lib._

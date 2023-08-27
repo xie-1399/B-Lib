@@ -1,4 +1,4 @@
-package lib.Sim
+package Sim
 
 // a way to use vcs or Verilator
 

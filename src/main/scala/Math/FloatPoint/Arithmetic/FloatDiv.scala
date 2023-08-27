@@ -1,4 +1,4 @@
-package lib.Math.FloatPoint.Arithmetic
+package Math.FloatPoint.Arithmetic
 
 class FloatDiv {
 

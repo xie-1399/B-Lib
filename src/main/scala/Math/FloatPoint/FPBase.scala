@@ -1,4 +1,4 @@
-package lib.Math.FloatPoint
+package Math.FloatPoint
 import spinal.core._
 
 /*

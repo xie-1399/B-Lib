@@ -1,4 +1,4 @@
-package lib.Int
+package Int
 
 import spinal.core.sim._
 import org.scalatest.funsuite.AnyFunSuite
