@@ -1,7 +1,7 @@
 package Int
 
-import lib.Sim.SpinalSim
-import lib.Math.Int.IntSqrt
+import Sim.SpinalSim
+import Math.Int.IntSqrt
 import spinal.core.sim._
 import org.scalatest.funsuite.AnyFunSuite
 

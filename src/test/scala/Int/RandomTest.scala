@@ -2,8 +2,8 @@ package Int
 
 import spinal.core.sim._
 import org.scalatest.funsuite.AnyFunSuite
-import lib.Math.Int.RandomGenerator
-import lib.Sim.SpinalSim
+import Math.Int.RandomGenerator
+import Sim.SpinalSim
 
 import scala.util.Random
 

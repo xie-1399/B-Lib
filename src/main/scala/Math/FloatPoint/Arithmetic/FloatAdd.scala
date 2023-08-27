@@ -1,6 +1,6 @@
 package Math.FloatPoint.Arithmetic
 
-import lib.Math.FloatPoint._
+import Math.FloatPoint._
 import spinal.core._
 
 //the add step : https://juejin.cn/post/7085316206239940639
