@@ -26,7 +26,7 @@ case class AxiReadonlyMemorySimConfig (
                               )
 
 
-case class ReadonlyMemorysim(axi : Axi4ReadOnly, clockDomain : ClockDomain, config : AxiReadonlyMemorySimConfig) {
+case class AxiReadonlyMemorysim(axi : Axi4ReadOnly, clockDomain : ClockDomain, config : AxiReadonlyMemorySimConfig) {
   val memory = SparseMemory()
   val pending_reads = new mutable.Queue[AxiJob]
   val threads = new mutable.Queue[SimThread]
