@@ -9,11 +9,11 @@ import scala.collection.mutable
 import scala.util.Random
 import spinal.lib._
 
-"""
+/*
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 this part is likely AxiMemorySim but Readonly@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-"""
+*/
 
 
 case class AxiReadonlyMemorySimConfig (
