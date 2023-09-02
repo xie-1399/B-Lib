@@ -1,6 +1,7 @@
 package DefineMem
 import spinal.core._
-import spinal.lib.{Flow, IMasterSlave, OHMasking, Stream, master}
+import spinal.lib._
+import DefineUntils._
 /*
   define some useful memory operation here(adn some comes from lib Mem)
   more details and methods is on : https://github.com/SpinalHDL/SpinalHDL/blob/dev/lib/src/main/scala/spinal/lib/Mem.scala
@@ -46,8 +47,28 @@ class MemOperation[T <: Data](mem:Mem[T]) {
   }
 
   /*
-  Todo with multi read Ports using masking choose
+  multi Stream/Flow readSync ports
   */
+  def StreamReadSyncMultiPort(cmd:Seq[Stream[UInt]],crossClock:Boolean = false):Vec[Stream[T]] = {
+    val ret = Vec(Stream(mem.wordType),cmd.length)
+    val selectedOh = OneHotOperation.BoolswordLSBOh(Vec(cmd.map(_.valid)))
+    val selectedCmd = Stream(mem.addressType)
+    selectedCmd.valid := cmd.map(_.valid).orR  //get any valids cmd
+    selectedCmd.payload := OneHotOperation.BitVectorOhMapping(selectedOh.asBits,Vec(cmd.map(_.payload)))
+
+    val retOh = RegNextWhen(selectedOh,selectedCmd.ready)
+    val retRsp = StreamReadSync(selectedCmd)
+
+    retRsp.ready := (ret, retOh).zipped.map(_.ready && _).orR
+    for (i <- 0 until cmd.length) {
+      cmd(i).ready := selectedCmd.ready && selectedOh(i)
+      ret(i).valid := retRsp.valid && retOh(i)
+      ret(i).payload := retRsp.payload
+    }
+    ret
+  }
+
+
 
   /*
   define memory read/write ports

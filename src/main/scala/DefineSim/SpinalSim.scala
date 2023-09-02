@@ -8,7 +8,6 @@ import spinal.core.sim._
 ** val rtl = RtlConfig()
 ** rtl.setconfig(new XXX)
 */
-
 object SpinalSim{
   case class RtlConfig(path:String = "rtl",frequency : Int = 50, hdl: SpinalMode = Verilog){
     def setconfig = SpinalConfig(mode = hdl,targetDirectory = path,defaultClockDomainFrequency = FixedFrequency(frequency MHz))
@@ -25,13 +24,12 @@ object SpinalSim{
     }
   }
 
-  //add tags about the bundle with the simPublic() but not about the Mem
+  //add the data type
   def addSimPublic(list: List[Data]): Unit = {
     for(elem <- list){
-      elem simPublic()
+        elem simPublic()
     }
   }
-
 
   //no Io predix
   class PrefixComponent extends Component{

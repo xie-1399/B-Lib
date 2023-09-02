@@ -3,10 +3,48 @@ package DefineSim
 import java.io._
 import java.text._
 import java.util._
+import spinal.core._
+import spinal.core.sim._
 
 //create logfile in the Accelerator project
 
 object Logger{
+  /* the print format of the log value*/
+  def apply(value:UInt,hex:Boolean = false) = {
+    val res = if(hex) value.toLong.toHexString else value.toLong
+    println(value.name + "   is  " + res)
+  }
+
+  def apply(value:Bool,binary:Boolean) = {
+    val res = if(binary) value.toBoolean.toInt else value.toBoolean
+    println(value.name + "   is  " + res)
+  }
+
+  def apply(value: SInt,binary:Boolean) = {
+    val res = if(binary) value.toLong.toBinaryString else value.toLong
+    println(value.name + "   is  " + res)
+  }
+
+  def apply(value:Bits,signal:Boolean,bitWidth:Int): Unit = {
+    val res = if(signal){
+      unsignedToSigned(value.toLong,bitWidth)
+    }
+    else {
+      value.toLong
+    }
+    println(value.name + "   is  " + res)
+  }
+
+  // a convert to the signed number
+  def unsignedToSigned(unsignedValue: Long, bitWidth: Int): Long = {
+    val maxUnsignedValue = (1L << bitWidth) - 1L
+    if (unsignedValue <= maxUnsignedValue / 2) {
+      unsignedValue
+    } else {
+      unsignedValue - (maxUnsignedValue + 1)
+    }
+  }
+
   def CreateloggerFile(logpath:String = "./results.log",clear:Boolean = false) = {
     if(clear){
       val file = new File(logpath)
