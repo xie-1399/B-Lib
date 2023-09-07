@@ -1,4 +1,4 @@
-package DefineBus
+package DefineBus.Axi
 
 import spinal.core._
 import spinal.sim._

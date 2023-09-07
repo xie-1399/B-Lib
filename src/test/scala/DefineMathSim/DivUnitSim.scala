@@ -79,7 +79,7 @@ class DivUnitSim extends AnyFunSuite {
         testRandom()
     }
   }
-  
+
   test("Mixed div") {
     SIMCFG(gtkFirst = true).compile {
       val dut = new MixedDivider(32, 32, false)

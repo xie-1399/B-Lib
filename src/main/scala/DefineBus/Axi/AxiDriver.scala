@@ -1,4 +1,4 @@
-package DefineBus
+package DefineBus.Axi
 
 //this part is about how to use axi4 bus read/write data from the memory
 //they are more likely fixed
