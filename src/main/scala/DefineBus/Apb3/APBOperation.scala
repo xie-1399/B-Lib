@@ -1,7 +1,9 @@
 package DefineBus.Apb3
 
+import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
+import spinal.lib.bus.amba3.apb.sim.Apb3Driver
 import spinal.lib.bus.amba3.apb.{Apb3, Apb3Config}
 
 /*
@@ -26,9 +28,13 @@ object APBOperation {
   def connect(source:Apb3,dest:Apb3,masterlatency:Boolean) = {
     if(masterlatency) source.m2sPipe() >> dest else source >> dest
   }
-  
 
-
-
+  /*
+  sim with the apb driver
+  */
+  def sim(apb : Apb3, clockDomain : ClockDomain) = {
+    val driver = Apb3Driver(apb,clockDomain)
+    driver
+  }
 
 }

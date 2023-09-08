@@ -34,3 +34,4 @@ class SimpleBusToAPB(config:simpleBusConfig) extends PrefixComponent {
   }
   APBOperation.connect(toApb(),io.apb,false) // without m2s
 }
+
