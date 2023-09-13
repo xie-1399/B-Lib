@@ -43,6 +43,5 @@ class boxtest extends PrefixComponent {
 }
 
 object BlackBoxOperation extends App {
-  val rtl = RtlConfig()
-  rtl.setconfig(new boxtest)
+  val rtl = new RtlConfig().GenRTL(top = new boxtest())
 }

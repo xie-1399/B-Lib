@@ -58,6 +58,6 @@ object AxiMemory extends App{
     useLock = false,
     useQos = false
   )
-  val rtl = RtlConfig()
+  val rtl = new RtlConfig()
   rtl.setconfig(new SimpleAxiMemory(axiconfig))
 }
