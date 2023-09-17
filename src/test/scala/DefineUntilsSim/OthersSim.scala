@@ -28,6 +28,7 @@ class OthersSim extends PrefixComponent{
   val history = Others.history(io.value,10)
 }
 
+
 class OtherTest extends AnyFunSuite{
   test("others until component"){
     SIMCFG(gtkFirst = true).compile{

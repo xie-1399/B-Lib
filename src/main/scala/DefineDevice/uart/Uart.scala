@@ -1,11 +1,14 @@
 package DefineDevice.uart
 
+import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
 
   /*
   for convent -> this file will contain all the uart files
   the source code is : https://github.com/SpinalHDL/SpinalHDL/tree/dev/lib/src/main/scala/spinal/lib/com/uart
+  the material about the UART is :  https://www.analog.com/cn/analog-dialogue/articles/uart-a-hardware-communication-protocol.html
+  the cts and rts were used to control the buffer in the uart control
  */
 
 object UartStopType extends SpinalEnum(binarySequential){
@@ -21,6 +24,9 @@ object UartParityType extends SpinalEnum(binarySequential){
   val NONE,EVEN,ODD = newElement()
 }
 
+object UartTxState extends SpinalEnum{
+  val IDLE,START,DATA,PARITY,STOP = newElement()
+}
 
 object UartCtrlTxState extends SpinalEnum{
   /*
@@ -65,12 +71,3 @@ case class UartCtrlFrameConfig(gen:UartGen) extends Bundle{
   val parity = UartParityType()
 }
 
- /*
-  the tx recevice the stream uart fram -> convert it to the txd (one bit by one bit)
- */
-
-class UartCtrlTx(gen:UartGen) extends Component{
-  import gen._
-
-
-}

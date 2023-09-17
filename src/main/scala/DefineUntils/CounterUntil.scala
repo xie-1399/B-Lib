@@ -15,6 +15,4 @@ object CounterUntil {
   def toFlow(defineCounter: DefineCounter): Flow[UInt] = defineCounter.toFlow()
   def init(defineCounter: DefineCounter,init:BigInt) = defineCounter.init(init)
 
-
-
 }
