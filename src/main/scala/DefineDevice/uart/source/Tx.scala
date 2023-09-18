@@ -1,4 +1,4 @@
-package DefineDevice.uart
+package DefineDevice.uart.source
 
 import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
@@ -40,8 +40,8 @@ class Tx(gen:UartGen) extends PrefixComponent{
 
   /* use a statemachine to control the whole process */
   val stageMachine = new Composite(this,"TxStateMachine"){
-    import UartTxState._
     import UartStopType._
+    import UartTxState._
 
     val state = RegInit(IDLE)
     val parity = Reg(Bool())

@@ -2,7 +2,7 @@ package DefineDeviceSim.uart
 
 import DefineSim._
 import DefineSim.SpinalSim._
-import DefineDevice.uart._
+import DefineDevice.uart.source._
 import org.scalatest.funsuite.AnyFunSuite
 import spinal.core.sim._
 import scala.util.Random
@@ -67,5 +67,4 @@ class TxSim extends AnyFunSuite {
         monitor(str.code)
     }
   }
-
 }

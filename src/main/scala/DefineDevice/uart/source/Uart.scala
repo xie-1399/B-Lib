@@ -1,6 +1,5 @@
-package DefineDevice.uart
+package DefineDevice.uart.source
 
-import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
 
