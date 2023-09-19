@@ -37,6 +37,34 @@ object CrossbarResize{
     }
     res
   }
+
+  /* each device has a fifo with the bits combine */
+  def apply[T<:Data](data:Vec[T],size:Int,id:Vec[UInt],write:Bool,Seperate:Boolean,depth:Int = 10):Vec[T] = {
+    require(id.size == data.size)
+    require(log2Up(size) <= id.getBitsWidth)
+    val res = data.clone()
+    val datafifo = Vec(Reg(data.dataType), depth)
+    val idfifo = Vec(Reg(id.dataType),depth)
+
+    val dataArray = Vec(Reg(datafifo.clone()), size)
+    val idArray = Vec(Reg(idfifo.clone()), size)
+
+    val lineCounter = Counter(depth).init(0)
+
+    when(write) {
+      for (idx <- 0 until size) {
+        dataArray(idx)(lineCounter) := data(idx)
+        idArray(idx)(lineCounter) := id(idx)
+      }
+      lineCounter.increment()
+    }
+
+    for(idx <- 0 until size){
+      res(idx) := dataArray(idArray(idx)(lineCounter.value - 1))(lineCounter.value - 1)
+    }
+    res
+  }
+
 }
 
 class CrossbarConfig(size:Int,dataWidth:Int,idWidth:Int,withFifo:Boolean = false) extends PrefixComponent {
@@ -47,12 +75,13 @@ class CrossbarConfig(size:Int,dataWidth:Int,idWidth:Int,withFifo:Boolean = false
     val write = ifGen(withFifo){ in Bool()}
   }
   if(withFifo){
-    io.cmd := CrossbarResize(io.data,size = 10,id = io.id,write = io.write)
+    val cross = CrossbarResize(io.data,size = size,id = io.id,write = io.write,Seperate = true)
+    io.cmd := cross
   }else{
-    io.cmd := CrossbarResize(io.data,size = 10,id = io.id)
+    io.cmd := CrossbarResize(io.data,size = size,id = io.id)
   }
 }
 
 object CrossbarExample extends App{
-  val rtl = new RtlConfig().GenRTL(top = new CrossbarConfig(size = 10,dataWidth = 256,idWidth = 4,withFifo = true))
+  val rtl = new RtlConfig().GenRTL(top = new CrossbarConfig(size = 3,dataWidth = 128,idWidth = 2,withFifo = true),pruned = true)
 }
