@@ -8,6 +8,7 @@ import spinal.lib._
   the source code is : https://github.com/SpinalHDL/SpinalHDL/tree/dev/lib/src/main/scala/spinal/lib/com/uart
   the material about the UART is :  https://www.analog.com/cn/analog-dialogue/articles/uart-a-hardware-communication-protocol.html
   the cts and rts were used to control the buffer in the uart control
+  what's more about it is on the interrupt: look https://blog.csdn.net/bjbz_cxy/article/details/120020250 or https://www.cnblogs.com/lht-learning/p/15918081.html
  */
 
 object UartStopType extends SpinalEnum(binarySequential){
@@ -23,7 +24,8 @@ object UartParityType extends SpinalEnum(binarySequential){
   val NONE,EVEN,ODD = newElement()
 }
 
-object UartTxState extends SpinalEnum{
+ /* tx state and rx state is the same*/
+object UartState extends SpinalEnum{
   val IDLE,START,DATA,PARITY,STOP = newElement()
 }
 
@@ -69,4 +71,3 @@ case class UartCtrlFrameConfig(gen:UartGen) extends Bundle{
   val stop = UartStopType()
   val parity = UartParityType()
 }
-

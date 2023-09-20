@@ -41,7 +41,7 @@ class Tx(gen:UartGen) extends PrefixComponent{
   /* use a statemachine to control the whole process */
   val stageMachine = new Composite(this,"TxStateMachine"){
     import UartStopType._
-    import UartTxState._
+    import UartState._
 
     val state = RegInit(IDLE)
     val parity = Reg(Bool())
