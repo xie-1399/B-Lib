@@ -26,7 +26,7 @@ object SpinalSim{
     SpinalConfig(targetDirectory = "rtl")).workspacePath("simulation")
 
   //only sample to produce the wave with iter cycles
-  def onlySample(clockDomain: ClockDomain, operation: () => Unit, iter: Int = 100): Unit = {
+  def onlySample(clockDomain: ClockDomain, operation: () => Unit = null, iter: Int = 100): Unit = {
     for (idx <- 0 until iter) {
       operation()
       clockDomain.waitSampling()
@@ -34,11 +34,13 @@ object SpinalSim{
   }
 
   //add the data type
-  def addSimPublic(list: List[Data]): Unit = {
-    for(elem <- list){
-        elem simPublic()
+  def addSimPublic[T <: Data](list: List[Data] = null,mem:Mem[T] = null): Unit = {
+    if(list != null) for (elem <- list) {
+      elem simPublic()
     }
+    if(mem != null) mem simPublic()
   }
+
 
   //no Io predix
   class PrefixComponent() extends Component{

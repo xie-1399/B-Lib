@@ -68,19 +68,19 @@ class Rx(gen:UartGen) extends PrefixComponent{
       parity := parity ^ sampler.value
     }
 
-    switch(state){
-      is(IDLE){
-        when(sampler.tick && !sampler.value &&)
-      }
-      is(){
-
-      }
-      is(){
-
-      }
-      is(){
-
-      }
-    }
+//    switch(state){
+//      is(IDLE){
+//        when(sampler.tick && !sampler.value &&)
+//      }
+//      is(){
+//
+//      }
+//      is(){
+//
+//      }
+//      is(){
+//
+//      }
+//    }
   }
 }

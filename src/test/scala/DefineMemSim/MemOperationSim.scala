@@ -3,24 +3,33 @@ import DefineSim.SpinalSim._
 import spinal.core._
 import DefineSim._
 import spinal.lib._
+import spinal.sim._
+import spinal.core.sim._
 import scala.collection.mutable.ArrayBuffer
 import DefineMem._
+import org.scalatest.funsuite.AnyFunSuite
 
   /*
-  add test of mem operations(ports and stream/flow to wr)
+  the simulation is about the ram
+  the ram has so many untils and some operations about it
   */
 
-class MemOperationSim(init:Boolean = false) extends PrefixComponent {
-  val io = new Bundle{
-    val cmd = slave Stream(UInt(5 bits))
-    val streamreadsync = master Stream(Bits(32 bits))
-
+class MemOperationSim extends AnyFunSuite {
+  test("Mem operation component") {
+    SIMCFG(gtkFirst = true).compile {
+      val dut = new Component {
+        val ram = MemOperation.apply(UInt(3 bits),8,2)
+      }
+      addSimPublic(mem = dut.ram)
+      dut
+    }.doSim {
+      dut =>
+        dut.clockDomain.forkStimulus(10)
+        dut.clockDomain.waitSampling()
+        for (idx <- 0 until 7){
+            println(MemOperation.getSim(dut.ram,idx))}  //assert it === 2
+    }
   }
-  val memory = Mem(Bits(32 bits),32)
-  val arrayBuffer = ArrayBuffer[BigInt]()
-  if(init) for (i <- 0 until 32) arrayBuffer += i.toBigInt;memory.initBigInt(arrayBuffer.toSeq)
-  val operation = new MemOperation(memory)
-  io.streamreadsync <-< operation.StreamReadSync(io.cmd)
 
 }
 
