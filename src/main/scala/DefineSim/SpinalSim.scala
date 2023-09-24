@@ -2,7 +2,7 @@ package DefineSim
 
 import spinal.core._
 import spinal.core.sim._
-
+import spinal.lib.sim._
 import scala.collection.mutable.ArrayBuffer
 
 // just generate verilog or using in the test
@@ -60,6 +60,13 @@ object SpinalSim{
   class PrefixComponent(name:String = null) extends Component{
     noIoPrefix()
     if(name != null) setDefinitionName(name)
+  }
+
+  /* use the score board to test the simulation data is right*/
+  def ScoreBoardSimulation[T]() = {
+    /* get a new board (pushDut and pushRef) */
+    val scoreboardInOrder = ScoreboardInOrder[T]()
+    scoreboardInOrder
   }
 
   /* set the generator signal name(for area use the Composite) */

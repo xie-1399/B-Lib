@@ -8,6 +8,7 @@ import spinal.sim._
 import spinal.core.sim._
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
+import DefineSim.SpinalSim._
 
 /*
  test about the define simple bus
@@ -24,7 +25,7 @@ class SMBTest extends AnyFunSuite {
       dut =>
         dut.clockDomain.forkStimulus(10)
         val driver = new SMBDriver(dut.io.smb,dut.clockDomain)
-        val scoreboardInOrder = StramFlowSim.ScoreBoardSimulation[IndexedSeq[BigInt]]()
+        val scoreboardInOrder = ScoreBoardSimulation[IndexedSeq[BigInt]]()
         val iteration  = 1000
         val DataList = for(idx <- 0 until iteration) yield BigInt(Random.nextInt(100) * 5 + idx)
         scoreboardInOrder.pushRef(DataList)

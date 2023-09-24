@@ -25,10 +25,4 @@ object StramFlowSim{
       "Stream Simulation"
     }
 
-    def ScoreBoardSimulation[T]() = {
-      //get a new board (pushDut and pushRef)
-      val scoreboardInOrder = ScoreboardInOrder[T]()
-      scoreboardInOrder
-    }
-
 }
