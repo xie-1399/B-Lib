@@ -44,6 +44,16 @@ class CustomCacheSim extends AnyFunSuite {
           }
         }
 
+        def writeCache(way:Int,Taddress:Long,Daddress:Long,tags:BigInt,data:BigInt,valid:Boolean) = {
+          if(valid){
+            dut.ways(way).tags.setBigInt(Taddress,tags)
+            dut.ways(way).datas.setBigInt(Daddress,data)
+          }
+          else {
+            dut.ways(way).datas.setBigInt(Daddress,data)
+          }
+        }
+
         dut.clockDomain.forkStimulus(10)
         val initBoolean = ArrayBuffer[Bool]()
         initBoolean += dut.io.driver.cmd.valid
@@ -51,7 +61,7 @@ class CustomCacheSim extends AnyFunSuite {
         SpinalSim.simInitValue(initBoolean, boolean = true, bits = false, clockDomain = dut.clockDomain)
         dut.clockDomain.waitSamplingWhere(!dut.haltCmd.toBoolean)
 
-
+        writeCache(0,0,0,0x102,0x10000000,true) /* this show a way to write something to the Cache file */
 
         /* test start flush */
         MemoryContent(4,32,256) /* show one way value */
