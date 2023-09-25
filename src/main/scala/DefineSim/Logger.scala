@@ -35,13 +35,22 @@ object Logger{
     println(value.name + "   is  " + res)
   }
 
-  // a convert to the signed number
+  /* a convert to the signed number */
   def unsignedToSigned(unsignedValue: Long, bitWidth: Int): Long = {
     val maxUnsignedValue = (1L << bitWidth) - 1L
     if (unsignedValue <= maxUnsignedValue / 2) {
       unsignedValue
     } else {
       unsignedValue - (maxUnsignedValue + 1)
+    }
+  }
+  /* convert the bigInt value to the binary with width */
+  def bigintToBinaryStringWithWidth(bigIntValue: BigInt, width: Int): String = {
+    val binaryString = bigIntValue.toString(2)
+    if (binaryString.length < width) {
+      "0" * (width - binaryString.length) + binaryString
+    } else {
+      binaryString
     }
   }
 
@@ -66,9 +75,11 @@ object Logger{
     if(withTime & showproject){
       //add time in the log
       logger.write(s"================${project}=================\n")
-      logger.write(s"[${date} ${hour}:${min}]  ${content}]\n")
+      logger.write(s"[${date} ${hour}:${min}]  ${content}\n")
     }else if(withTime & !showproject){
-      logger.write(s"[${date} ${hour}:${min}]  ${content}]\n")
+      logger.write(s"[${date} ${hour}:${min}]  ${content}\n")
+    }else{
+      logger.write(s"\t ${content}\n")
     }
     logger.close() //close file stream
   }

@@ -20,7 +20,7 @@ class MemOperationSim extends AnyFunSuite {
       val dut = new Component {
         val ram = MemOperation.apply(UInt(3 bits),8,2)
       }
-      addSimPublic(mem = dut.ram)
+      addSimPublic(mems = List(dut.ram))
       dut
     }.doSim {
       dut =>

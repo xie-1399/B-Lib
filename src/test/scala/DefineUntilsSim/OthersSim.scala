@@ -15,8 +15,11 @@ import scala.util.Random
 class OthersSim extends PrefixComponent{
   val io = new Bundle{
     val value = in UInt(4 bits)
+    val boolean = in Bool()
   }
 
+  val useboolean = False
+  when(io.boolean){useboolean := True} /* will convert it to reg */
   val majorityVote = MajorityVote(io.value)
   val onenumber = Others.getOneNumber(io.value.asBools) > io.value.asBools.size / 2
   assert(majorityVote === onenumber)

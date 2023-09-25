@@ -36,11 +36,11 @@ object SpinalSim{
   }
 
   /*add the data type and support the memory sim public*/
-  def addSimPublic[T <: Data](list: List[Data] = null,mem:Mem[T] = null): Unit = {
+  def addSimPublic[T <: Data](list: List[Data] = null,mems:List[Mem[T]] = null): Unit = {
     if(list != null) for (elem <- list) {
       elem simPublic()
     }
-    if(mem != null) mem simPublic()
+    if(mems != null) for(mem <- mems) mem simPublic()
   }
 
   /* driver the sim data with init value like false for Bool*/
