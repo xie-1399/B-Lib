@@ -1,13 +1,14 @@
 package DefineMemSim
 
 import DefineMem._
-import DefineSim.{Logger, SIMCFG, SpinalSim}
+import DefineSim._
 import DefineSim.SpinalSim._
 import org.scalatest.funsuite.AnyFunSuite
 import spinal.core.sim._
 import spinal.core._
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 /*
  the custom cache should simulation very carefully using some random tests
@@ -52,6 +53,7 @@ class CustomCacheSim extends AnyFunSuite {
           else {
             dut.ways(way).datas.setBigInt(Daddress,data)
           }
+          dut.clockDomain.waitSampling()
         }
 
         dut.clockDomain.forkStimulus(10)
@@ -60,10 +62,39 @@ class CustomCacheSim extends AnyFunSuite {
         initBoolean += dut.io.flush.cmd.valid
         SpinalSim.simInitValue(initBoolean, boolean = true, bits = false, clockDomain = dut.clockDomain)
         dut.clockDomain.waitSamplingWhere(!dut.haltCmd.toBoolean)
+        println("flush cache finish")
+        val addressList = SimUntils.GenRandomList(0,Int.MaxValue,10,true,prefix = "random address: ")
+        val dataList = SimUntils.GenRandomList(0,Int.MaxValue,10,true,prefix = "random data: ")
 
-        writeCache(0,0,0,0x102,0x10000000,true) /* this show a way to write something to the Cache file */
+        def hit(addressList:ArrayBuffer[BigInt],dataList:ArrayBuffer[BigInt]): Unit = {
+          for ((address,data) <- (addressList,dataList).zipped) {
+            dut.io.driver.cmd.valid #= false
+            dut.io.driver.cmd.wr #= false
+            val addressBinary =  Logger.bigintToBinaryStringWithWidth(address,32)
+            val tagBinary = addressBinary.substring(10,32)
+            val lineBinary = addressBinary.substring(5, 10)
+            val wordBinary = addressBinary.substring(2, 10)
+            val tag = Integer.parseInt(tagBinary, 2)
+            val Taddress = Integer.parseInt(lineBinary, 2)
+            val Daddress = Integer.parseInt(wordBinary, 2)
+            println(s"tag: ${tag},Taddress:${Taddress},Daddress:${Daddress}")
+            writeCache(Random.nextInt(4), Taddress, Daddress, tag, data, true)
+            dut.io.driver.cmd.valid #= true
+            dut.io.driver.cmd.address #= address
+            dut.io.driver.cmd.wr #= false
+            dut.io.driver.cmd.mask #= 0
+            dut.io.driver.cmd.data #= 0
+
+            dut.clockDomain.waitSamplingWhere(dut.io.driver.rsp.valid.toBoolean)
+            println("hit data:" + dut.io.driver.rsp.data.toBigInt)
+            println("hit address:" + dut.io.driver.rsp.address.toBigInt)
+          }
+        }
+
+        // writeCache(0,0,0,0x102,0x10000000,true) /* this show a way to write something to the Cache file */
 
         /* test start flush */
+        hit(addressList,dataList)
         MemoryContent(4,32,256) /* show one way value */
     }
 

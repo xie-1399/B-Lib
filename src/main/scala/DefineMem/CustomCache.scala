@@ -59,6 +59,37 @@ case class driverBus(config: cacheConfig) extends Bundle with IMasterSlave{
   }
 }
 
+/* the mem bus should trans with the cache */
+case class MemCmd(config:cacheConfig) extends Bundle{
+  val wr = Bool()
+  val address = UInt(config.addressWidth bits)
+  val data = Bits(config.memDataWidth bits)
+  val mask = Bits(config.cmdDataWidth / 8 bits)
+  val length = UInt(log2Up(config.burstLength + 1) bits)
+}
+
+case class MemRsp(config: cacheConfig) extends Bundle{
+  val data = Bits(config.memDataWidth bits)
+}
+
+case class MemBus(config:cacheConfig) extends Bundle with IMasterSlave {
+  val cmd = Stream(MemCmd(config))
+  val rsp = Flow(MemRsp(config))
+
+  override def asMaster(): Unit = {
+    master(cmd)
+    slave(rsp)
+  }
+  /* convert the cmd request to the bus bundle*/
+  def toAxi4() = {
+
+  }
+
+  def toSimpleBus() = {
+
+  }
+}
+
 /* flush bus can be used to flush the cache value*/
 case class flushBus(Nodata:Boolean = true) extends Bundle with IMasterSlave {
   val cmd = ifGen(Nodata){Event} /* Stream trans with No data will be the event*/
@@ -134,6 +165,11 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
     io.driver.rsp.address := request.address
   }
 
+  /* the line loader to fill the tag with data*/
+  val LineLoader = new Area{
+
+  }
+
   /* flush the cache trans with the flush bus , flush line by line */
   val Flush = ifGen(config.flushIt) { new Area {
     val flushFromInterface = RegInit(False)
@@ -157,7 +193,6 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
     when(!RegNext(flushCounter.msb)){
       haltCmd := True
     }
-
     when(io.flush.cmd.valid){
       haltCmd := True
       when(io.flush.cmd.ready){
@@ -165,12 +200,9 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
         flushFromInterface := True
       }
     }
-
-
     val flushRsp = if (flushIt) (flushCounter.msb.rise && flushFromInterface) else False
     io.flush.rsp := flushRsp /* show when is interface flushing */
     io.flush.cmd.ready := !(Hit.request.valid)
-
   }}
 
   report.GenReport(config,name,logContant)
