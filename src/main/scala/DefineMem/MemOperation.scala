@@ -3,6 +3,7 @@ import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
 import DefineUntils._
+import spinal.lib.misc.HexTools
 /*
   define some useful memory operation here(adn some comes from lib Mem)
   more details and methods is on : https://github.com/SpinalHDL/SpinalHDL/blob/dev/lib/src/main/scala/spinal/lib/Mem.scala
@@ -22,6 +23,12 @@ object MemOperation{
     }
     def apply[T<:Data](word:HardType[T],depth:Int,init:Int):Mem[T] = apply(word,depth,BigInt(init))
 
+    def apply[T<:Data](word:HardType[T],depth:Int,initHex:String = null,hexoffset:BigInt,useSram:Boolean = false):Mem[T] = {
+      if(useSram) assert(initHex == null,"sram can not use init hex")
+      val mem = apply(word,depth)
+      HexTools.initRam(mem,initHex,hexoffset)
+      mem
+    }
 
     /* simulation about the ram if is sim public*/
     def getSim[T<:Data](mem:Mem[T],address:Long) = {

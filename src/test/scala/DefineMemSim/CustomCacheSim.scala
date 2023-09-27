@@ -12,6 +12,8 @@ import scala.util.Random
 
 /*
  the custom cache should simulation very carefully using some random tests
+
+ the logic is a little complex
 */
 
 class CustomCacheSim extends AnyFunSuite {
