@@ -16,7 +16,7 @@ object MemOperation{
       Mem.fill(depth)(word)
     }
 
-   /* if should has initial value about*/
+   /* if should has initial value about */
     def apply[T <: Data](word:HardType[T],depth:Int,init:BigInt):Mem[T] = {
       val mem = apply(word,depth)
       mem.initBigInt((0 until mem.wordCount).map(_ => init))
@@ -30,7 +30,7 @@ object MemOperation{
       mem
     }
 
-    /* simulation about the ram if is sim public*/
+    /* simulation about the ram if is sim public */
     def getSim[T<:Data](mem:Mem[T],address:Long) = {
        mem.getBigInt(address)
     }
@@ -38,7 +38,7 @@ object MemOperation{
       mem.setBigInt(address,data)
     }
 
-    /* if want to create read or write port -> use the api is enough*/
+    /* if want to create read or write port -> use the api is enough */
 
 
 }

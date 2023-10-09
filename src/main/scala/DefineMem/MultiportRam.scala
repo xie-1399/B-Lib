@@ -19,7 +19,7 @@ object MultiportRam {
   }
 
   case class MemReadCmd[T<:Data](payloadType:HardType[T],depth:Int) extends Bundle with IMasterSlave{
-    /* send the cmd and get the rsp*/
+    /* send the cmd and get the rsp */
     val cmd = Flow(UInt(log2Up(depth) bits))
     val rsp = payloadType()
     override def asMaster(): Unit = {
@@ -37,7 +37,7 @@ object MultiportRam {
   class RamMr1w[T<:Data](payloadType:HardType[T],readPort:Int,depth:Int,ReadAsync:Boolean = true) extends PrefixComponent{
     val io = new Bundle{
       val reads = Vec.fill(readPort)(slave(MemReadCmd(payloadType,depth)))
-      val write = slave(Flow(MemWriteCmd(payloadType,depth))) /*also should control the write valid*/
+      val write = slave(Flow(MemWriteCmd(payloadType,depth))) /*also should control the write valid */
     }
     val banks = for(read <- io.reads) yield new Area {
       val ram = Mem(payloadType,depth) // or use Mem.fill(depth)(payloadType)
@@ -48,7 +48,7 @@ object MultiportRam {
     }
   }
 
-  /*  if use xor -> a more safe way using the xor to change the data when write and read it with decode*/
+  /*  if use xor -> a more safe way using the xor to change the data when write and read it with decode */
   class RamMrMw[T<:Data](payloadType:HardType[T],readPort:Int,writePort:Int,
                          depth:Int,ReadAsync:Boolean = true,UseXor:Boolean = false) extends PrefixComponent{
     if(UseXor) SpinalWarning("the multi port ram will encode the data with xor and decode it with xor too, so notice about it")
@@ -56,7 +56,7 @@ object MultiportRam {
     val rawBits = payloadType.getBitsWidth
     val rawType = HardType(Bits(rawBits bits))
 
-    /* set the data as bits type and use the hard type instead of Data T.clone()*/
+    /* set the data as bits type and use the hard type instead of Data T.clone() */
     val ram = List.fill(writePort)(MemOperation(rawType,depth))
 
     val writes = for((write,storage) <- (io.writes,ram).zipped) yield new Area{
@@ -73,7 +73,7 @@ object MultiportRam {
         )
       }
     }
-    /* may be convert to the bits is a little over*/
+    /* may be convert to the bits is a little over */
     val reads = for((read,storage) <- (io.reads,ram).zipped) yield new Area{
       if(!UseXor){
         val value = if (ReadAsync) storage.readAsync(read.cmd.payload) else storage.readSync(read.cmd.payload,enable = read.cmd.valid)

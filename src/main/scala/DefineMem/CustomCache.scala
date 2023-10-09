@@ -8,6 +8,7 @@ import spinal.core
 import spinal.core.sim._
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 /*
  the custom define Cache for using purpose for readonly or read and write
  Bus: Axi4 port: dual port
@@ -24,6 +25,7 @@ case class cacheConfig(cacheSize:Int,
                        readOnly:Boolean = false,
                        byPass:Boolean = false,
                        flushIt:Boolean = true,
+                       WhiteBox:Boolean = false
                       ){
   val burstSize = bytePerLine * 8 / memDataWidth /* the burst size define the burst used to trans from memory */
   val burstLength = bytePerLine / (memDataWidth / 8) /* length is also the same as size*/
@@ -110,6 +112,7 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
 
   val io = new Bundle{
     val driver = slave(driverBus(config))
+    val mem = master(MemBus(config))
     val flush = slave(flushBus())
   }
   /* define the cache information with config*/
@@ -121,12 +124,14 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
   val lineRange = tagRange.low - 1 downto log2Up(bytePerLine)
   /* use the byte to index or use the word to index*/
   val wordRange = log2Up(bytePerLine) -1 downto log2Up(bytePerWord)
+  val wordCount = tagRange.low - 1 downto log2Up(bytePerWord)
   val byteRange = wordRange.low - 1 downto 0
   logContant += s"wayLineCount:${wayLineCount}, wayWordCount:${wayWordCount}"
   logContant += s"tagRange:{${tagRange.start} -> ${tagRange.end}}"
   logContant += s"lineRange:{${lineRange.start} -> ${lineRange.end}}"
   logContant += s"wordRange:{${wordRange.start} -> ${wordRange.end}}"
   logContant += s"byteRange:{${byteRange.start} -> ${byteRange.end}}"
+  logContant += s"wayWordRange:{${wordCount.start} -> ${wordCount.end}}"
 
   val haltCmd = False  /* stop to generate the cmd request */
 
@@ -165,8 +170,20 @@ class CustomCache(config: cacheConfig,name:String = "DefaultCache") extends Pref
     io.driver.rsp.address := request.address
   }
 
-  /* the line loader to fill the tag with data*/
+  /* the line loader to fill the tag with data */
   val LineLoader = new Area{
+
+    val loader = Stream(new Bundle{
+      val addr = UInt(addressWidth bits)
+    })
+
+    io.mem.cmd.address := loader.addr(tagRange.high downto lineRange.low) @@ U(0,lineRange.low bit)
+    val lineInfoWrite = LineInfo()
+    lineInfoWrite.valid := Flush.flushCounter.msb
+    lineInfoWrite.address := loader.addr(tagRange)
+    when(loader.fire){
+      ???
+    }
 
   }
 
@@ -224,9 +241,12 @@ object report{
   }
 }
 
+
+
 object CustomCache extends App{
   val config = cacheConfig(cacheSize = 4096, bytePerLine = 32, wayCount = 4, addressWidth = 32,
     cmdDataWidth = 32, memDataWidth = 32, readOnly = true)
 
   val rtl = new RtlConfig().GenRTL(top = new CustomCache(config,name = "InstructionCache"))
 }
+
