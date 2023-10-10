@@ -54,6 +54,16 @@ object Logger{
     }
   }
 
+  /* convert the hex string with width */
+  def HexStringWithWidth(hex: String, width: Int,fill:String = "0"): String = {
+    if (hex.length < width) {
+      fill * (width - hex.length) + hex
+    } else {
+      hex
+    }
+  }
+
+
   def CreateloggerFile(logpath:String = "./results.log",clear:Boolean = false) = {
     if(clear){
       val file = new File(logpath)

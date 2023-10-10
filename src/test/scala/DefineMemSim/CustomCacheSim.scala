@@ -12,7 +12,6 @@ import scala.util.Random
 
 /*
  the custom cache should simulation very carefully using some random tests
-
  the logic is a little complex
 */
 
@@ -75,7 +74,7 @@ class CustomCacheSim extends AnyFunSuite {
             val Daddress = Integer.parseInt(wordBinary, 2)
             val value = Logger.bigintToBinaryStringWithWidth(tag,23)
             println(s"tag: ${value},Taddress:${Taddress},Daddress:${Daddress}")
-            writeCache(address,tag,data,true)
+            // writeCache(address,tag,data,true)
             MemoryContent(4,32,256)
 
             dut.io.driver.cmd.valid #= true
