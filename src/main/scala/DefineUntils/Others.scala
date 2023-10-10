@@ -53,4 +53,13 @@ object Others {
   }
 
 
+  /* use the list to assign the Bundle value */
+  def assignBundleWithList(bundle:Bundle,seq:Seq[BaseType]) = {
+    val flat = bundle.flatten
+    flat.zipWithIndex.map {
+      case (elem, index) => elem := seq(index)
+    }
+  }
+
+
 }

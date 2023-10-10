@@ -12,10 +12,17 @@ import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random
 
+case class NewBundle() extends Bundle{
+  val useBool = Bool()
+  val useInt = UInt(10 bits)
+  val useBits = Bits(10 bits)
+}
+
 class OthersSim extends PrefixComponent{
   val io = new Bundle{
     val value = in UInt(4 bits)
     val boolean = in Bool()
+    val newBundle = out (NewBundle())
   }
 
   val useboolean = False
@@ -29,6 +36,8 @@ class OthersSim extends PrefixComponent{
 
   val delay = Others.delay(io.value,5)
   val history = Others.history(io.value,10)
+
+  Others.assignBundleWithList(io.newBundle,Seq(True,U(10,10 bits),B(0,10 bits)))
 }
 
 
