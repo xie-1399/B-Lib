@@ -154,7 +154,7 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
   io.decodeOut.valid := outCtrl.illegal /* will catch the error */
   io.error := outCtrl.illegal
   io.inst.ready := outCtrl.illegal
-  
+
 }
 
 object CustomDecode extends App{
