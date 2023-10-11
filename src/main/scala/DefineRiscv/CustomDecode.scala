@@ -62,9 +62,12 @@ object MemoryOp extends SpinalEnum{
   )
 }
 
-/* Todo the two operation types here */
-object OP1 extends SpinalEnum{}
-object OP2 extends SpinalEnum{}
+object OP1 extends SpinalEnum(binarySequential){
+  val RS1,PC,IMU = newElement()
+}
+object OP2 extends SpinalEnum(binarySequential){
+  val IMM,RS2 = newElement()
+}
 
 case class CtrlSignals(p:decodeParameters) extends Bundle {
   /* Todo  set more control signal here like csr and more*/
@@ -75,20 +78,28 @@ case class CtrlSignals(p:decodeParameters) extends Bundle {
   val useRd = Bool()
   val jump = Bool()
   val fencei = Bool()
+  val compress = Bool()
   val rs1 = UInt(5 bits)
   val rs2 = UInt(5 bits)
   val rd = UInt(5 bits)
   val branch = BR()
   val alu = ALU()
   val memoryOption = MemoryOp()
+  /* default : Seq(N,N,N,N,N,N,N,U(0,5 bits),U(0,5 bits),U(0,5 bits),BR.N,ALU.COPY,MemoryOp.NOT) */
+}
 
-  /* default is : Seq(N,N,N,N,N,N,8,15,0) */
+object DecodeConstant{
+  val rs1Range = 19 downto 15
+  val rs2Range = 24 downto 20
+  val rdRange = 11 downto 7
+  val opcodeRange = 6 downto 0
 }
 
 
 class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComponent{
   import Instructions._
-
+  import DecodeConstant._
+  import InstructionFMT._
   val io = new Bundle{
     val inst = slave Stream Bits(32 bits)
     val decodeOut = master Stream CtrlSignals(p)
@@ -98,13 +109,44 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
   def N = False
   val ctrl = CtrlSignals(p)
   /* s complex switch of decode*/
-  assignBundleWithList(ctrl,Seq(N,N,N,N,N,N,U(0,5 bits),U(0,5 bits),U(0,5 bits),BR.N,ALU.COPY,MemoryOp.NOT))
+  assignBundleWithList(ctrl,Seq(N,N,N,N,N,N,N,U(0,5 bits),U(0,5 bits),U(0,5 bits),BR.N,ALU.COPY,MemoryOp.NOT))
+  val opcode = io.inst.payload(opcodeRange)
+  val rs1 = io.inst.payload(rs1Range).asUInt
+  val rs2 = io.inst.payload(rs2Range).asUInt
+  val rd = io.inst.payload(rdRange).asUInt
 
   when(io.inst.valid){
-    switch(io.inst.payload){
-      is(ADD){assignBundleWithList(ctrl,Seq(Y,Y,Y,Y,N,N,BR.N,ALU.ADD,MemoryOp.NOT))}
-      /* Todo add more instruction here */
+    when(opcode === IM_R_FMT || opcode === A_R_FMT){
+      switch(io.inst.payload) {
+        is(ADD) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.ADD, MemoryOp.NOT))}
+        is(SUB) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SUB, MemoryOp.NOT))}
+        is(XOR) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.XOR, MemoryOp.NOT))}
+        is(OR) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.OR, MemoryOp.NOT))}
+        is(AND) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.AND, MemoryOp.NOT))}
+        is(SLL) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SLL, MemoryOp.NOT))}
+        is(SRL) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SRL, MemoryOp.NOT))}
+        is(SRA) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SRA, MemoryOp.NOT))}
+        is(SLT) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SLT, MemoryOp.NOT))}
+        is(SLTU) {assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, BR.N, ALU.SLTU, MemoryOp.NOT))}
+        /* Todo add more M and A instruction here */
+        ifGen(p.withRVA){}
+        ifGen(p.withRVM){}
+      }
     }
+      .elsewhen(equalWithList(opcode,Seq(I_IMM_FMT,I_LOAD_FMT,I_ENV_FMT,I_JALR_FMT))){
+      }
+      .elsewhen(opcode === I_S_FMT){
+
+      }
+      .elsewhen(opcode === I_B_FMT){
+
+      }
+      .elsewhen(opcode === I_J_FMT){
+
+      }
+      .elsewhen(equalWithList(opcode,Seq(I_LUI_FMT,I_AUIPC_FMT))){
+      }
+
   }
 
   val outCtrl = if(insert) RegNext(ctrl) else ctrl
@@ -112,6 +154,7 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
   io.decodeOut.valid := outCtrl.illegal /* will catch the error */
   io.error := outCtrl.illegal
   io.inst.ready := outCtrl.illegal
+  
 }
 
 object CustomDecode extends App{

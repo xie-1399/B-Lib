@@ -61,5 +61,9 @@ object Others {
     }
   }
 
-
+  /* this shows about how to find in the list whether exist right value */
+  def equalWithList[T<:Data](data:T,content:Seq[T]):Bool = {
+    val bools = content.map(_ === data)
+    getOneNumber(bools) > 0
+  }
 }

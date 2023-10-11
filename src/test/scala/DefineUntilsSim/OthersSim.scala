@@ -38,6 +38,14 @@ class OthersSim extends PrefixComponent{
   val history = Others.history(io.value,10)
 
   Others.assignBundleWithList(io.newBundle,Seq(True,U(10,10 bits),B(0,10 bits)))
+
+  val e1 = B"1111"
+  val e2 = B"1011"
+  val e3 = B"0011"
+  val data1 = B"0101"
+  val data2 = B"1011"
+  val test1 = Others.equalWithList(data1,Seq(e1,e2,e3))
+  val test2 = Others.equalWithList(data2,Seq(e1,e2,e3))
 }
 
 

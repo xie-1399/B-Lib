@@ -820,8 +820,29 @@ object Instructions {
   def XPERM8             = M"0010100----------100-----0110011"
   def ZEXT_H             = M"000010000000-----100-----0111011"
 }
+
 object customInstruction{
   /* add some custom instructions here */
+}
+
+object InstructionFMT{
+  def IM_R_FMT = B"0110011"
+  def A_R_FMT = B"0101111"
+
+  def I_IMM_FMT = B"0010011"
+  def I_LOAD_FMT = B"0000011"
+  def I_ENV_FMT = B"1110011"
+  def I_JALR_FMT = B"1100111"
+
+  def I_S_FMT = B"0100011"
+
+  def I_B_FMT = B"1100011"
+
+  def I_J_FMT = B"1101111"
+
+  def I_LUI_FMT = B"0110111"
+  def I_AUIPC_FMT = B"0010111"
+
 }
 
 object Causes {
