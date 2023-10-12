@@ -13,7 +13,7 @@ import scala.collection.mutable
 class FIFOSim extends AnyFunSuite {
   test("FIFO simple component") {
     SIMCFG(gtkFirst = true).compile {
-      val dut = FIFO(Bits(10 bits),32)
+      val dut = FIFO(Bits(10 bits),32,true)
       dut.empty.simPublic()
       dut
     }.doSimUntilVoid {
@@ -22,6 +22,8 @@ class FIFOSim extends AnyFunSuite {
 
         val queueModel = mutable.Queue[Long]()
         SimTimeout(1000000 * 10)
+        dut.io.flush #= false
+        dut.io.flushValue #= 0
 
         // Push data randomly, and fill the queueModel with pushed transactions.
         val pushThread = fork {

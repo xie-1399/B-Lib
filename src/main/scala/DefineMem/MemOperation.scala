@@ -30,6 +30,16 @@ object MemOperation{
       mem
     }
 
+    /* Todo test about it */
+    def flush[T<:Data](flush:Bool,mem:Mem[T],value:T): Bool = {
+      val counter = Counter(mem.wordCount)
+      when(flush){
+        mem.write(counter,value,enable = flush)
+        counter.increment()
+      }
+      counter.willOverflow
+    }
+
     /* simulation about the ram if is sim public */
     def getSim[T<:Data](mem:Mem[T],address:Long) = {
        mem.getBigInt(address)
