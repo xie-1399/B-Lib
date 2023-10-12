@@ -46,6 +46,10 @@ class OthersSim extends PrefixComponent{
   val data2 = B"1011"
   val test1 = Others.equalWithList(data1,Seq(e1,e2,e3))
   val test2 = Others.equalWithList(data2,Seq(e1,e2,e3))
+
+
+  val wire_reg = RegInit(False) /* not like False */
+  when(io.boolean){wire_reg := True}
 }
 
 

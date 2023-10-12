@@ -19,38 +19,43 @@ class FIFOSim extends AnyFunSuite {
     }.doSimUntilVoid {
       dut =>
         dut.clockDomain.forkStimulus(10)
-
         val queueModel = mutable.Queue[Long]()
         SimTimeout(1000000 * 10)
-        dut.io.flush #= false
-        dut.io.flushValue #= 0
-
-        // Push data randomly, and fill the queueModel with pushed transactions.
-        val pushThread = fork {
-          dut.io.enqueue.valid #= false
-          while (true) {
-            dut.io.enqueue.valid.randomize()
-            dut.io.enqueue.payload.randomize()
-            dut.clockDomain.waitSampling()
-            if (dut.io.enqueue.valid.toBoolean && dut.io.enqueue.ready.toBoolean) {
-              queueModel.enqueue(dut.io.enqueue.payload.toLong)
+        def monitor() = {
+          dut.io.flush #= false
+          /* Push data randomly, and fill the queueModel with pushed transactions. */
+          val pushThread = fork {
+            dut.io.enqueue.valid #= false
+            while (true) {
+              dut.io.enqueue.valid.randomize()
+              dut.io.enqueue.payload.randomize()
+              dut.clockDomain.waitSampling()
+              if (dut.io.enqueue.valid.toBoolean && dut.io.enqueue.ready.toBoolean) {
+                queueModel.enqueue(dut.io.enqueue.payload.toLong)
+              }
             }
+          }
+          /* Pop data randomly, and check that it match with the queueModel. */
+          val popThread = fork {
+            dut.io.dequeue.ready #= true
+            for (i <- 0 until 100000) {
+              dut.io.dequeue.ready.randomize()
+              dut.clockDomain.waitSampling()
+              if (dut.io.dequeue.valid.toBoolean && dut.io.dequeue.ready.toBoolean) {
+                assert(dut.io.dequeue.payload.toLong == queueModel.dequeue())
+              }
+            }
+            simSuccess()
           }
         }
-
-        // Pop data randomly, and check that it match with the queueModel.
-        val popThread = fork {
-          dut.io.dequeue.ready #= true
-          for (i <- 0 until 100000) {
-            dut.io.dequeue.ready.randomize()
-            dut.clockDomain.waitSampling()
-            if (dut.io.dequeue.valid.toBoolean && dut.io.dequeue.ready.toBoolean) {
-              assert(dut.io.dequeue.payload.toLong == queueModel.dequeue())
-            }
-          }
+        def flush() = {
+          dut.io.flush #= true
+          dut.io.flushValue #= 0
+          dut.clockDomain.waitSamplingWhere(dut.io.flushDone.toBoolean)
           simSuccess()
         }
 
+        flush()
 
     }
   }

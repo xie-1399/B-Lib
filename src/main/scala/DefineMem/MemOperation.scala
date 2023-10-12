@@ -30,14 +30,16 @@ object MemOperation{
       mem
     }
 
-    /* Todo test about it */
+    /* flush */
     def flush[T<:Data](flush:Bool,mem:Mem[T],value:T): Bool = {
       val counter = Counter(mem.wordCount)
+      val flushDone = False
       when(flush){
         mem.write(counter,value,enable = flush)
         counter.increment()
       }
-      counter.willOverflow
+      when(counter.willOverflow){flushDone := True}
+      flushDone
     }
 
     /* simulation about the ram if is sim public */
