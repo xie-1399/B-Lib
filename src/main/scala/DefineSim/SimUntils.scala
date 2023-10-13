@@ -21,6 +21,10 @@ object SimUntils {
     res
   }
 
+  def logwithCycle(simTime:String,content:String): Unit = {
+    println(s"[${simTime}]\t" + content)
+  }
+
 
 }
 
