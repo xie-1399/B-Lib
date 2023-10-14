@@ -9,12 +9,52 @@ package DefineDevice.Interrupt
 import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
+import spinal.lib.bus.misc._
 import spinal.lib.bus.amba3.apb._
 import spinal.lib.bus.amba4.axilite._
 import spinal.lib.bus.wishbone._
 import spinal.lib.misc._
 
 /* the clint is drived by some buses,so provide a interface and know how to use it is enough */
+object ClintSource{
+  /* add clint source code here */
+  case class Clint(hartCount: Int) extends Area {
+    val stop = False
+    val time = Reg(UInt(64 bits)) init (0)
+    when(!stop) {
+      time := time + 1
+    }
+
+    val harts = for (hartId <- 0 until hartCount) yield new Area {
+      val cmp = Reg(UInt(64 bits))
+      val timerInterrupt = RegNext(time >= cmp)
+      val softwareInterrupt = RegInit(False)
+    }
+
+    /* drive the clint reg with buses  */
+    def driveFrom(bus: BusSlaveFactory, bufferTime: Boolean = false) = new Area {
+      val IPI_ADDR = 0x0000 /* software interrupt base address */
+      val CMP_ADDR = 0x4000 /* compare time reg base address */
+      val TIME_ADDR = 0xBFF8 /* read the time in the clint */
+
+      bufferTime match {
+        case false => bus.readMultiWord(time, TIME_ADDR)
+        case true => new Composite(this) {
+          assert(bus.busDataWidth == 32)
+
+          val timeMsb = RegNextWhen(time(63 downto 32), bus.isReading(TIME_ADDR))
+          bus.read(time(31 downto 0), TIME_ADDR)
+          bus.read(timeMsb, TIME_ADDR + 4)
+        }
+      }
+
+      val hartsMapping = for (hartId <- 0 until hartCount) yield new Area {
+        bus.writeMultiWord(harts(hartId).cmp, CMP_ADDR + 8 * hartId)
+        bus.readAndWrite(harts(hartId).softwareInterrupt, IPI_ADDR + 4 * hartId, bitOffset = 0)
+      }
+    }
+  }
+}
 
 object CLint{
 
