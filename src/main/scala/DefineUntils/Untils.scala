@@ -6,7 +6,7 @@ import spinal.core._
 /*
 define some some interesting untils find in the lib/utils
 */
-object Others {
+object Untils {
   /*
   let the bitvector(Bits/UInt/SInt) bits reversed
   */

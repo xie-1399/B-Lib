@@ -3,7 +3,7 @@ package DefineRiscv
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.lib._
 import spinal.core._
-import DefineUntils.Others.{assignBundleWithList, _}
+import DefineUntils.Untils._
 /*
  * the common decode unit in the risc-v 32 Arch
  * support config set and custom instruction

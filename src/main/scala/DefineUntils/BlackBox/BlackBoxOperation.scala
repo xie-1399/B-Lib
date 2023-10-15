@@ -1,4 +1,4 @@
-package DefineUntils
+package DefineUntils.BlackBox
 
 import DefineSim.SpinalSim._
 import spinal.core._

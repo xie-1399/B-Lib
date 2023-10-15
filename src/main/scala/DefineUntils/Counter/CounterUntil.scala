@@ -1,8 +1,7 @@
-package DefineUntils
+package DefineUntils.Counter
 
-import spinal.lib._
 import spinal.core._
-import DefineUntils.DefineCounter
+import spinal.lib._
 //all kinds of counter in the spinal lib
 
 object CounterUntil {

@@ -1,4 +1,4 @@
-package DefineUntils
+package DefineUntils.Counter
 
 import spinal.core._
 import spinal.lib._

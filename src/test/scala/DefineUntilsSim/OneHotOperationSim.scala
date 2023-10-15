@@ -8,7 +8,7 @@ import spinal.sim._
 import spinal.core.sim._
 import scala.util.Random
 import scala.math._
-
+import ProMux.OneHotOperation
 /*
  the Component is used to test about the one hot operation
  the asBools is the same bit of Bool presentation

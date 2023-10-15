@@ -6,8 +6,8 @@ import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
 import spinal.sim._
-import DefineUntils.Others
-import DefineUntils.CounterUntil
+import DefineUntils.Untils
+import DefineUntils.Counter.CounterUntil
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random
@@ -28,24 +28,24 @@ class OthersSim extends PrefixComponent{
   val useboolean = False
   when(io.boolean){useboolean := True} /* will convert it to reg */
   val majorityVote = MajorityVote(io.value)
-  val onenumber = Others.getOneNumber(io.value.asBools) > io.value.asBools.size / 2
+  val onenumber = Untils.getOneNumber(io.value.asBools) > io.value.asBools.size / 2
   assert(majorityVote === onenumber)
 
   val keepcounter = CounterUntil.keepCounter(0,10)
   keepcounter.increment()
 
-  val delay = Others.delay(io.value,5)
-  val history = Others.history(io.value,10)
+  val delay = Untils.delay(io.value,5)
+  val history = Untils.history(io.value,10)
 
-  Others.assignBundleWithList(io.newBundle,Seq(True,U(10,10 bits),B(0,10 bits)))
+  Untils.assignBundleWithList(io.newBundle,Seq(True,U(10,10 bits),B(0,10 bits)))
 
   val e1 = B"1111"
   val e2 = B"1011"
   val e3 = B"0011"
   val data1 = B"0101"
   val data2 = B"1011"
-  val test1 = Others.equalWithList(data1,Seq(e1,e2,e3))
-  val test2 = Others.equalWithList(data2,Seq(e1,e2,e3))
+  val test1 = Untils.equalWithList(data1,Seq(e1,e2,e3))
+  val test2 = Untils.equalWithList(data2,Seq(e1,e2,e3))
 
 
   val wire_reg = RegInit(False) /* not like False */

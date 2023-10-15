@@ -1,4 +1,5 @@
- package DefineUntils
+ package DefineUntils.ProMux
+
 import spinal.core._
 import spinal.lib._
  /*
