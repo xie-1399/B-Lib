@@ -2,7 +2,6 @@ package DefineMem
 import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
-import DefineUntils._
 import spinal.lib.misc.HexTools
 /*
   define some useful memory operation here(adn some comes from lib Mem)
