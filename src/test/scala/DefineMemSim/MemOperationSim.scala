@@ -18,14 +18,16 @@ class MemOperationSim extends AnyFunSuite {
   test("Mem operation component") {
     SIMCFG(gtkFirst = true).compile {
       val dut = new Component {
-        val ram = MemOperation.apply(UInt(3 bits),8,2)
+        val ram = MemOperation.apply(UInt(8 bits),8,2)
+        ram.write(U(0,3 bits),U(16,8 bits),mask = B"0011") /* show how to use mask write bits into the memory */
       }
       addSimPublic(mems = List(dut.ram))
       dut
     }.doSim {
       dut =>
         dut.clockDomain.forkStimulus(10)
-        dut.clockDomain.waitSampling()
+        dut.clockDomain.waitSampling(2)
+        println("mask :" + MemOperation.getSim(dut.ram,0))
         for (idx <- 0 until 7){
             println(MemOperation.getSim(dut.ram,idx))}  //assert it === 2
     }
