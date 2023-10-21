@@ -2,6 +2,7 @@ package DefineUntils
 
 import spinal.lib._
 import spinal.core._
+import spinal.core.internals.Operator.BitVector
 
 /*
 define some some interesting untils find in the lib/utils
@@ -46,6 +47,12 @@ object Untils {
   def getOneEachNumber(thats:Seq[Bool]) : Seq[UInt] = {
     CountOneOnEach(thats)
   }
+  /* get the condition value from the vec */
+  def CountNumber[T<:Data](thats:Vec[T],value:T) = {
+    thats.sCount(value)  /* return the UInt value */
+  }
+
+
 
   /* Return True if the number of bit set is > x.size / 2 */
   def OverHalfOne(thats:IndexedSeq[Bool]): Bool = {

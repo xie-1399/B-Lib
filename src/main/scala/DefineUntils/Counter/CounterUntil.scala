@@ -16,7 +16,13 @@ object CounterUntil {
     for(counter <- Counters){
       counter.init(init)
     }
+  }
 
+
+  def counterClear(Counters: Seq[Counter]) = {
+    for (counter <- Counters) {
+      counter.clear()
+    }
   }
 
 

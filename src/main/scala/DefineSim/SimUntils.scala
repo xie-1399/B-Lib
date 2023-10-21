@@ -3,6 +3,7 @@ package DefineSim
 import scala.collection.mutable._
 import scala.util.Random
 import spinal.core._
+import spinal.core.internals.Operator.BitVector
 import spinal.sim._
 import spinal.lib.sim._
 import spinal.core.sim._
@@ -58,6 +59,17 @@ object VecSim{
     for (idx <- 0 until values.length) {
       vec(idx) #= values(idx)
     }
+  }
+
+  /* print format of the vector bits */
+  def logout[T<:BitVector](values:Vec[T],seperate:Int) = {
+    for(idx <- 0 until values.length){
+      print(values(idx).toBigInt.toString() + "\t")
+      if((idx + 1) % seperate == 0){
+        println()
+      }
+    }
+
   }
 
 
