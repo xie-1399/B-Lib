@@ -62,6 +62,7 @@ object VecSim{
   }
 
   /* print format of the vector bits */
+
   def logout[T<:BitVector](values:Vec[T],seperate:Int) = {
     for(idx <- 0 until values.length){
       print(values(idx).toBigInt.toString() + "\t")
