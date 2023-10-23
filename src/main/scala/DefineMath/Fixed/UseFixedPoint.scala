@@ -45,8 +45,5 @@ object FixedPointDemo extends App{
       dut.clockDomain.waitSampling(5)
   }
 
-
-
-
 }
 
