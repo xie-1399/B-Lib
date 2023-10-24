@@ -13,6 +13,13 @@ object CI {
     .workspacePath("simulation")
 }
 
+object FST{
+  val simCfg = SimConfig
+    .withFstWave
+    .withVerilator
+    .workspacePath("simulation")
+}
+
 object VCS{
   val flags = VCSFlags(
     compileFlags = List("-kdb","-cpp g++-4.8","-cc gcc-4.8", "+define+UNIT_DELAY", "+define+no_warning"),
@@ -25,9 +32,16 @@ object VCS{
 }
 
 object SIMCFG{
-  def apply(gtkFirst:Boolean = false): SpinalSimConfig = {
+  def apply(gtkFirst:Boolean = false,compress:Boolean = false): SpinalSimConfig = {
     sys.env.get("VCS_HOME") match {
-      case Some(_) => if(gtkFirst) CI.simCfg else VCS.simCfg
+      case Some(_) => {
+        (gtkFirst, compress) match {
+          case (true,true) => FST.simCfg
+          case (false,true) => FST.simCfg
+          case (true,false) => CI.simCfg
+          case (false,false) => VCS.simCfg
+        }
+      }
       case None => CI.simCfg
     }
   }

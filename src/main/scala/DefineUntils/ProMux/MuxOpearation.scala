@@ -8,4 +8,7 @@ object MuxOpearation {
 
   def muxwithOH = MuxOH
 
+  /* the Stream Mux function */
+
+
 }

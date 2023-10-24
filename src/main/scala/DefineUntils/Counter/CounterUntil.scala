@@ -24,6 +24,4 @@ object CounterUntil {
       counter.clear()
     }
   }
-
-
 }
