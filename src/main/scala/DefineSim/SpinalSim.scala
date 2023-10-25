@@ -15,10 +15,10 @@ import scala.collection.mutable.ArrayBuffer
 
 object SpinalSim{
 
-  class RtlConfig(path:String = "rtl",frequency : Int = 50, hdl: SpinalMode = Verilog){
+  class RtlConfig(path:String = "rtl",frequency : Double = 50.0, hdl: SpinalMode = Verilog){
     def setconfig = SpinalConfig(mode = hdl,targetDirectory = path,defaultClockDomainFrequency = FixedFrequency(frequency MHz))
 
-    def GenRTL[T <: Component](top: => T, config: SpinalConfig = SpinalConfig(targetDirectory = path), pruned: Boolean = true) = {
+    def GenRTL[T <: Component](top: => T, config: SpinalConfig = SpinalConfig(defaultClockDomainFrequency = FixedFrequency(frequency MHz),targetDirectory = path), pruned: Boolean = true) = {
       if (pruned) SpinalVerilog(config = config)(top).printPruned() else SpinalVerilog(config)(top)
     }
 
