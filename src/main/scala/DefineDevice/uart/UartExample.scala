@@ -9,57 +9,37 @@ import spinal.lib.com.uart._
 import spinal.lib.bus.amba3.apb._
 
   /*
-  this example show about how to drive the (simple bus / apb bus)  data to the uart
+  this example show about the uart control usage
+  the more clear examples is on the Apb3Decoder Play (show how to use the apb drive the uart control)
   */
 
-object UartConfig{
-    /*
-     use the init config can set the clock width
-     hwo to set the clock diver width
-    */
-    val uartCtrlConfig = UartCtrlMemoryMappedConfig(
-      uartCtrlConfig = UartCtrlGenerics(
-        dataWidthMax = 8,
-        clockDividerWidth = 20,
-        preSamplingSize = 1,
-        samplingSize = 3,
-        postSamplingSize = 1
-      ),
-      initConfig = UartCtrlInitConfig(
-        baudrate = 115200,
-        dataLength = 7, //7 => 8 bits
-        parity = UartParityType.NONE,
-        stop = UartStopType.ONE
-      ),
-      busCanWriteClockDividerConfig = false,
-      busCanWriteFrameConfig = false,
-      txFifoDepth = 16,
-      rxFifoDepth = 16
-    )
-
-    def getApb3Config = Apb3Config(
-      addressWidth = 5,
-      dataWidth = 32,
-      selWidth = 1,
-      useSlaveError = false
-    )
-
-  }
-
-/* drive it with the apb bus*/
-class UartExample() extends PrefixComponent{
+class UartCtrlExample() extends Component{
   val io = new Bundle{
     val uart = master(Uart())
-    val apb = slave(new Apb3(UartConfig.getApb3Config))
-    val interupt = out Bool()
+    val switchs = in Bits(8 bits)
+    val leds = out Bits(8 bits)
   }
-  val apb3UartCtrl = Apb3UartCtrl(config = UartConfig.uartCtrlConfig)
-  apb3UartCtrl.io.apb <> io.apb
-  apb3UartCtrl.io.uart <> io.uart
-  io.interupt := apb3UartCtrl.io.interrupt
+
+  val uartCtrl: UartCtrl = UartCtrl(
+    config = UartCtrlInitConfig(
+      baudrate = 921600,
+      dataLength = 7,  // 8 bits
+      parity = UartParityType.NONE,
+      stop = UartStopType.ONE
+    )
+  )
+  uartCtrl.io.uart <> io.uart
+
+  //Assign io.led with a register loaded each time a byte is received
+  io.leds := uartCtrl.io.read.toFlow.toReg()
+
+  //Write the value of switch on the uart each 4000 cycles
+  val write = Stream(Bits(8 bits))
+  write.valid := CounterFreeRun(2000).willOverflow
+  write.payload := io.switchs
+  write >-> uartCtrl.io.write
 }
 
-object CrossbarExample extends App{
-  val rtl = new RtlConfig()
-  rtl.setconfig(new UartExample())
+object UartExample extends App{
+  val rtl = new RtlConfig().GenRTL(top = new UartCtrlExample())
 }
