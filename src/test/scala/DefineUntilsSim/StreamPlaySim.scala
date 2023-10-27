@@ -19,9 +19,11 @@ class StreamPlaySim extends AnyFunSuite{
         var thread1_nums = 0
         var thread2_nums = 0
         dut.clockDomain.forkStimulus(10)
-        dut.clockDomain.onSamplings(
+        dut.clockDomain.onSamplings{
           dut.io.ready.randomize()
-        )
+        }
+
+
         /* the driver will get it with random signal and the ready should not always down*/
           val thread1 = fork{
             StreamDriver(dut.io.raw1,dut.clockDomain){

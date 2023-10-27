@@ -1,10 +1,10 @@
-package DefinePipeline
+package DefinePipeline.lib
 
 import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
-import spinal.lib.pipeline._
 import spinal.lib.pipeline.Connection._
+import spinal.lib.pipeline._
   /*
    use the pipeline lib examples and think about it
    more function should look the source code of the pipeline lib

@@ -1,14 +1,13 @@
-package DefinePipeline
+package DefinePipeline.lib
 
-  /*
+/*
   using the spinal lib to create a simple 5 stages pipeline which can deal the Riscv-arith inst
   fetch -> decode -> excute -> memory -> writeback
   this is only show a way to use the pipeline
   */
-import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
+import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
-import spinal.lib.pipeline.Connection.M2S
 import spinal.lib.pipeline._
 
 import scala.collection.mutable.ArrayBuffer
@@ -110,7 +109,6 @@ class PipelineCPU extends PrefixComponent{
     }
 
     val onExcute = new Area {
-      import excute._
       when(excute(useimm)){
         excute(alu_res) := (excute(imm) + excute(op1).asUInt).resized
       }.otherwise{
