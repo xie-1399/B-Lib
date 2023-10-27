@@ -13,6 +13,7 @@ import spinal.lib._
 
 object StreamPlayer{
 
+  /* this shows about how to control the stream -> important to use it */
   class streamWait extends PrefixComponent{
     val io = new Bundle{
       val raw1 = slave(Stream(Bits(5 bits)))
@@ -20,12 +21,11 @@ object StreamPlayer{
       val ready = in Bool()
     }
     /* the wave will show how to delay a stage */
-    val m2s = io.raw1.stage()
-    m2s.ready := io.ready
+    val m2s = io.raw1.m2sPipe() /* the ready stage will high if no m2s valid happens */
+    m2s.ready := io.ready  /* the valid and payload will hold until self.ready */
 
     val s2m = io.raw2.s2mPipe()
     s2m.ready := io.ready
-
   }
 
   class streamChain extends PrefixComponent{
@@ -87,11 +87,13 @@ object StreamPlayer{
     val useLess = Stream(io.raw.payloadType)
     useLess.setIdle().setBlocked() /* the stream will be use less */
 
-    val conti = streams._1.continueWhen(io.continous)
-    val halt = streams._2.haltWhen(io.halt)
-    val throwIt = streams._3.throwWhen(io.throwIt)
+    streams._1.ready := True
+    streams._2.ready := True
+    streams._3.ready := True
 
-
+//    val conti = streams._1.continueWhen(io.continous)
+//    val halt = streams._2.haltWhen(io.halt)
+//    val throwIt = streams._3.throwWhen(io.throwIt)
   }
 
 }

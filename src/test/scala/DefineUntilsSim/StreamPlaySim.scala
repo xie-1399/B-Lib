@@ -73,7 +73,30 @@ class StreamPlaySim extends AnyFunSuite{
   }
 
   test("ctrl"){
+    SIMCFG(gtkFirst = true).compile {
+      val dut = new StreamPlayer.streamCtrl()
+      dut
+    }.doSim {
+      dut =>
+        var fire = 0
+        dut.clockDomain.forkStimulus(10)
+        /* random stream of the slave */
+        dut.io.halt.randomize()
+        dut.io.continous.randomize()
+        dut.io.throwIt.randomize()
 
+        StreamDriver(dut.io.raw, dut.clockDomain) { payload =>
+          payload.randomize()
+          true
+        }
+
+        StreamMonitor(dut.io.raw, dut.clockDomain) {
+          payload =>
+            fire += 1
+        }
+
+        dut.clockDomain.waitActiveEdgeWhere(fire == 10) /* the stream will fire 10 times*/
+    }
   }
 
 }
@@ -81,6 +104,6 @@ class StreamPlaySim extends AnyFunSuite{
 /* this is a way to save the simulation report function */
 object StreamPlaySim{
   def main(args: Array[String]): Unit = {
-    val report = Logger.SimReport(new StreamPlaySim(),testName = Some("wait"),clear = true)
+    val report = Logger.SimReport(new StreamPlaySim(),testName = Some("wait"),saved = false)
   }
 }

@@ -139,9 +139,9 @@ class CustomReporter extends Reporter {
       case event: RunStarting =>
         println(s"Test run starting: ${event.testCount} tests to run.")
       case event: TestStarting =>
-        println(s"Test starting: ${event.testName}")
+        println(s"===== starting: ${event.testName}=====")
       case event: TestSucceeded =>
-        println(s"Test succeeded: ${event.testName}")
+        println(s"===== Test succeeded: ${event.testName}=====")
       case event: TestFailed =>
         println(s"Test failed: ${event.testName}")
         println(s"  - Error Message: ${event.message}")
