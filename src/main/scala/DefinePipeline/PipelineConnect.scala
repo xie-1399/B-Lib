@@ -18,7 +18,8 @@ package DefinePipeline
 
 /* the source code is at https://github.com/IntelLabs/riscv-vector/blob/main/src/main/scala/util/PipelineConnect.scala
 *  this build a simple way to connect the pipeline component
-*  see the ConnectExample show using it */
+*  see the ConnectExample show using it
+*  the halt will stop the pipe fire and the flush will stop the next stage valid going*/
 import DefineSim.SpinalSim.PrefixComponent
 import spinal.core._
 import spinal.lib._
