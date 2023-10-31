@@ -1,4 +1,4 @@
-package DefineUntils.Counter
+package DefineUntils.DefineCounter
 
 /* this play show a more clearly usage of counter and it's sequence */
 import DefineSim.SIMCFG

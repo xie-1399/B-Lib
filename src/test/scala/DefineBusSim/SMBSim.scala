@@ -14,7 +14,7 @@ import DefineSim.SpinalSim._
  test about the define simple bus
 */
 
-class SMBTest extends AnyFunSuite {
+class SMBSim extends AnyFunSuite {
 
   test("SMB async/sync memory pass all") {
     SIMCFG(gtkFirst = true).compile {

@@ -8,6 +8,7 @@ import DefineSim._
 import scala.collection.mutable
 import scala.util.Random
 
+/* a complete examples see at the Define Riscv Core */
 
 case class request() extends Bundle{
   val testA = Bool()

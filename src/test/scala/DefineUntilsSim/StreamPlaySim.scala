@@ -75,7 +75,7 @@ class StreamPlaySim extends AnyFunSuite{
   }
 
   test("ctrl"){
-    SIMCFG(gtkFirst = true).compile {
+    SIMCFG(compress = true).compile {
       val dut = new StreamPlayer.streamCtrl()
       dut
     }.doSim {
@@ -83,10 +83,15 @@ class StreamPlaySim extends AnyFunSuite{
         var fire = 0
         dut.clockDomain.forkStimulus(10)
         /* random stream of the slave */
-        dut.io.halt.randomize()
-        dut.io.continous.randomize()
-        dut.io.throwIt.randomize()
-
+        dut.clockDomain.onSamplings{
+          dut.io.halt.randomize()
+          dut.io.continous.randomize()
+          dut.io.throwIt.randomize()
+          dut.io.done1.randomize()
+          dut.io.done2.randomize()
+          dut.io.done3.randomize()
+        }
+        /* the driver will drive the data only the fire happens (if not ready will block it)*/
         StreamDriver(dut.io.raw, dut.clockDomain) { payload =>
           payload.randomize()
           true

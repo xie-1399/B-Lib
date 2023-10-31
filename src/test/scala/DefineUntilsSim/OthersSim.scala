@@ -7,7 +7,7 @@ import spinal.core.sim._
 import spinal.lib._
 import spinal.sim._
 import DefineUntils.Untils
-import DefineUntils.Counter.CounterUntil
+import DefineUntils.DefineCounter.CounterUntil
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random

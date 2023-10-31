@@ -2,7 +2,9 @@ package DefineBus.Axi
 
 import spinal.lib.bus.amba4.axi._
 import spinal.core.sim._
-//init axi bus first if use axi bus
+
+/* Axi simulation tools
+ * init axi bus first if use axi bus */
 
 
 object AxiInit{

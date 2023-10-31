@@ -80,20 +80,30 @@ object StreamPlayer{
       val halt = in Bool()
       val continous = in Bool()
       val throwIt = in Bool()
+      val done1 = in Bool()
+      val done2 = in Bool()
+      val done3 = in Bool()
     }
 
-    val streams = StreamFork3(io.raw) /* this is synchronous */
+    /* clone the stream for difference purpose until all finish working */
 
+    val streams = StreamFork(io.raw,6) /* this is synchronous = false -> only all fire*/
     val useLess = Stream(io.raw.payloadType)
     useLess.setIdle().setBlocked() /* the stream will be use less */
 
-    streams._1.ready := True
-    streams._2.ready := True
-    streams._3.ready := True
+    streams(0).ready := io.done1
+    streams(1).ready := io.done2
+    streams(2).ready := io.done3
 
-//    val conti = streams._1.continueWhen(io.continous)
-//    val halt = streams._2.haltWhen(io.halt)
-//    val throwIt = streams._3.throwWhen(io.throwIt)
+    val conti = streams(3).continueWhen(io.continous) /* continue when will get a new stream which the valid and ready has the cond */
+    conti.ready := True
+
+    val halt = streams(4).haltWhen(io.halt) /* continueWhen(!halt) */
+    halt.ready := True
+
+    val throwIt = streams(5).throwWhen(io.throwIt) /* when throw it the stream will let valid false */
+    throwIt.ready := True
+    /* the takeWhen is throwWhen(!io.throwIt) */
   }
 
 }
