@@ -49,7 +49,7 @@ case class FetchBus(p:coreParameters) extends Bundle with IMasterSlave {
     slave(fetchRsp)
   }
 
-  def toAxi4(): Unit = {
+  def toAxi4ReadOnly(): Unit = {
 
   }
 }
@@ -59,13 +59,13 @@ case class FetchOut(p:coreParameters) extends Bundle {
   val instruction = Bits(p.instructionWidth bits)
 }
 
-/* fetch need to jump the pc Value */
 
 class Fetch(p:coreParameters) extends PrefixComponent{
   import p._
   val io = new Bundle{
     val halt = in Bool()
     val flush = in Bool()
+    val pcLoad = slave Flow(UInt(p.Xlen bits)) /* branch jump or exception jump*/
     val fetchOut = master Stream (FetchOut(p))
   }
   val fetchRequest = FetchBus(p)
@@ -76,18 +76,28 @@ class Fetch(p:coreParameters) extends PrefixComponent{
     val inc = False
     pc := Mux(inc,pcNext,pc) /* if receive increase then pc plus */
     val fetchValid = True.clearWhen(io.halt)
+    when(io.pcLoad.valid) {
+        pc := io.pcLoad.payload
+    }
   }
 
   val Fetch = new Area {
+    when(fetchRequest.fetchRsp.valid){
+      preFetch.inc := True
+    }
+    /* check if the io request */
 
     fetchRequest.fetchCmd.valid := preFetch.fetchValid
     fetchRequest.fetchCmd.io := fetchRequest.fetchCmd.pc(31 downto 28) === ioRange
     fetchRequest.fetchCmd.pc := preFetch.pc
 
-    val fetchOut = Stream(FetchOut(p))
-    fetchOut.valid := fetchRequest.fetchRsp.fire
-    fetchOut.instruction := fetchRequest.fetchRsp.instruction
-    fetchOut.pc := fetchRequest.fetchRsp.pc
+    io.fetchOut.valid := fetchRequest.fetchRsp.fire
+    io.fetchOut.instruction := fetchRequest.fetchRsp.instruction
+    io.fetchOut.pc := fetchRequest.fetchRsp.pc
+  }
+
+  val whiteBox = new Area {
+
   }
 
 }
