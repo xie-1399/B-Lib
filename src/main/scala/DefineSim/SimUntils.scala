@@ -12,6 +12,7 @@ here set some simulation function until for the spinal sim
 */
 
 object SimUntils {
+
   def GenRandomList(base:Int,offset:Int,num:Int,log:Boolean = false,prefix:String = null):ArrayBuffer[BigInt] = {
     val res = ArrayBuffer[BigInt]()
     for(idx <- 0 until num){
@@ -26,6 +27,10 @@ object SimUntils {
     println(s"[${simTime}]\t" + content)
   }
 
+  /* compare the two array content( whether is the same ) */
+  def compare[T](ref: Array[T], dut: Array[T]): Boolean = {
+    ref.deep == dut.deep
+  }
 
 }
 

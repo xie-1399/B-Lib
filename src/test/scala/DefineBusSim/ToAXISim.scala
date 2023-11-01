@@ -10,13 +10,10 @@ import spinal.lib.sim.{ScoreboardInOrder, StreamDriver, StreamMonitor}
 
 import scala.collection.mutable
 import scala.util.Random
-
+import DefineSim.SimUntils._
 
 class ToAXISim extends AnyFunSuite {
 
-    def compare(ref: Array[Byte], dut: Array[Byte]): Boolean = {
-      ref.deep == dut.deep
-  }
 
   test("read cmd to axi") {
     SIMCFG(compress = true).compile {

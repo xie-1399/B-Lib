@@ -8,42 +8,47 @@ import spinal.lib._
 import spinal.lib.sim.{StreamDriver, StreamMonitor}
 
 import scala.collection.mutable
-import scala.util.Random
-
+import scala.util._
+import DefineSim.SimUntils._
 /*
  * the fragment  will  transmit big thing by multiple small fragments
  * the document : https://spinalhdl.github.io/SpinalDoc-RTD/v1.8.0/SpinalHDL/Libraries/fragment.html#fragment */
 
-case class writeFragment() extends Bundle{
-  val addr = UInt(3 bits)
-  val data = Bits(8 bits)
+case class fragmentFormat(addrWidth:Int = 3,dataWidth:Int = 8,length:Int = 4){
+  def transLen = length * dataWidth
 }
 
-/* Todo each the fragment coming -> it also work*/
+case class writeFragment(f:fragmentFormat) extends Bundle{
+  val addr = UInt(f.addrWidth bits)
+  val data = Bits(f.dataWidth bits)
+}
 
-class FragmentPlay extends PrefixComponent{
+/* simulation success */
+
+class FragmentPlay(f:fragmentFormat) extends PrefixComponent{
 
   val io = new Bundle{
-    val trans = slave Stream(Fragment(writeFragment()))
+    val trans = slave Stream(Fragment(writeFragment(f))) /* translate each time */
   }
-  val mem = MemOperation(Bits(32 bits),8)
+  val mem = MemOperation(Bits(f.transLen bits),Math.pow(2,f.addrWidth).toInt)
 
   io.trans.ready := True
   val addr = RegNextWhen(io.trans.payload.addr,io.trans.first)
-  val bitsCounter = Counter(0,4)
+  val bitsCounter = Counter(f.length)
   when(io.trans.valid && !io.trans.first){
     bitsCounter.increment()
   }
-  val history = History(io.trans.payload.data,4,io.trans.valid && !io.trans.first,init = B"0".resized)
-  val counter = Counter(0,8)
-
+  when(io.trans.last){
+    bitsCounter.clear()
+  }
+  val history = History(io.trans.payload.data,4,io.trans.valid && !io.trans.first)
   mem.write(addr,history.asBits,bitsCounter.willOverflowIfInc)
 }
 
 object FragmentPlay extends App{
   import spinal.core.sim._
   SIMCFG(compress = true).compile{
-    val dut = new FragmentPlay()
+    val dut = new FragmentPlay(fragmentFormat())
     dut.mem.simPublic()
     dut
   }.doSim{
@@ -51,36 +56,40 @@ object FragmentPlay extends App{
       dut.clockDomain.forkStimulus(10)
       /* simulation about it */
 
-      val queue = mutable.Queue[BigInt]()
+      val queue = mutable.Queue[Byte]()
       dut.io.trans.valid #= false
       dut.io.trans.last #= false
       dut.clockDomain.waitSampling()
 
-      def monitor() = {
-        dut.io.trans.valid #= true
-        dut.io.trans.last #= false
-        val address = Random.nextInt(7)
-        dut.io.trans.addr #= address
-        dut.io.trans.data.randomize()
-        dut.clockDomain.waitSampling()
-        for(idx <- 0 until 4){
-          val last = if(idx == 3) true else false
-          val data = Random.nextInt(10)
+      def monitor(iteration:Int = 100) = {
+        for(idx <- 0 until iteration){
           dut.io.trans.valid #= true
-          dut.io.trans.last #= last
-          dut.io.trans.addr.randomize()
-          dut.io.trans.data #= data
-          queue.enqueue(data)
+          dut.io.trans.last #= false
+          val address = Random.nextInt(7)
+          dut.io.trans.addr #= address
+          dut.io.trans.data.randomize()
           dut.clockDomain.waitSampling()
+          for (idx <- 0 until 4) {
+            val last = if (idx == 3) true else false
+            val data = Random.nextInt(10) + 1
+            dut.io.trans.valid #= true
+            dut.io.trans.last #= last
+            dut.io.trans.addr.randomize()
+            dut.io.trans.data #= data
+            queue.enqueue(data.toByte)
+            dut.clockDomain.waitSampling()
+          }
+          dut.io.trans.valid #= false
+          dut.io.trans.last #= false
+          dut.clockDomain.waitSampling()
+          println("dut:" + dut.mem.getBigInt(address.toLong).toByteArray.mkString(","))
+          println("ref:" + queue.mkString(","))
+          assert(compare(dut.mem.getBigInt(address.toLong).toByteArray,queue.toArray))
+          queue.clear()
         }
-        dut.io.trans.valid #= false
-        dut.io.trans.last #= false
-        dut.clockDomain.waitSampling(3)
 
-        println("dut:" + dut.mem.getBigInt(address.toLong).toLong.toHexString)
-        println("ref:" + queue.mkString(","))
       }
-      monitor()
+      monitor(1000)
 
   }
 
