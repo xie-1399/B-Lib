@@ -25,6 +25,7 @@ class Apb3Plic(sourceCount : Int, targetCount : Int) extends PrefixComponent{
   )).toSeq
 
   val targets = for (i <- 0 until targetCount) yield PlicTarget(
+    id = i,
     gateways = gateways,
     priorityWidth = priorityWidth
   )
