@@ -3,17 +3,18 @@ package DefineRiscv.Core
 import spinal.core._
 import spinal.lib._
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
+import spinal.lib.misc.HexTools
+
+import scala.collection.mutable.ArrayBuffer
 
 
 case class ITCMParameters(TCMBlock:Int = 4,
                           TCMDepth:Int = 1024,
-                          Async:Boolean = true,
-                          withFlush:Boolean = true){
+                          Sync:Boolean = true,
+                          withFlush:Boolean = false,
+                          Init:Boolean = false){
   def TCMSize = TCMBlock * TCMDepth
 }
-
-// Todo optimal the itcm
-// Todo simulation
 
 class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
   import p._
@@ -28,16 +29,17 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
   val addrWidth = log2Up(TCMDepth)
   val last = (io.request.fetchCmd.pc(11).asBits === B"1") && (io.request.fetchCmd.pc(10).asBits === B"1")
   val third = (io.request.fetchCmd.pc(11).asBits === B"1") && (io.request.fetchCmd.pc(10).asBits === B"0")
-  val first = (io.request.fetchCmd.pc(9).asBits === B"1")
+  val first = (io.request.fetchCmd.pc(10).asBits === B"1")
+  val ready = if(withFlush) !io.flush else True
 
-  val idx = Mux(last,U(3),Mux(third,U(2),Mux(first,U(1),U(0))))
+  val idx = RegNextWhen(Mux(last,U(3),Mux(third,U(2),Mux(first,U(1),U(0)))),io.request.fetchCmd.fire)
   val align = RegInit(True)
   val pcValue = RegNextWhen(io.request.fetchCmd.pc,io.request.fetchCmd.fire)
   when(io.request.fetchCmd.fire && io.request.fetchCmd.payload.pc(1 downto 0).asBits =/= B"00"){
     align := False
   }.otherwise{align := True}
 
-  io.request.fetchCmd.ready := !io.flush
+  io.request.fetchCmd.ready := ready
 
   val banks = Seq.fill(TCMBlock)(Mem(Bits(8 bits),TCMDepth)) /* 4 * 1024 */
 
@@ -51,22 +53,34 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
   }
 
   io.request.fetchRsp.payload.pc := pcValue
-  io.request.fetchRsp.payload.instruction := read.banksValue.map(v => v.data0 ## v.data1 ## v.data2 ## v.data3).read(idx)
-  io.error := (io.request.fetchCmd.fire && !io.request.fetchCmd.io) || !align || (io.flush && io.request.fetchCmd.fire)  /* the request is illegal */
+  io.request.fetchRsp.payload.instruction := read.banksValue.map(v => v.data3 ## v.data2 ## v.data1 ## v.data0).read(idx)
+  io.error := (io.request.fetchCmd.fire && !io.request.fetchCmd.io) || !align   /* the request is illegal */
+  ifGen(withFlush){
+    when((io.flush && io.request.fetchCmd.fire)){
+      io.error := True
+    }
+  }
   io.request.fetchRsp.valid := !io.error && RegNext(io.request.fetchCmd.fire)
 
   /* no arbitration for read and flush at same time so carefully flush it */
-  val flushIt = new Area{
-    val counter = Counter(TCMDepth)
+  val flushIt = ifGen(withFlush){
+    new Area{
+      val counter = Counter(TCMDepth)
       when(io.flush){
         counter.increment()
       }
       for(bank <- banks){
         bank.write(counter,B"0".resize(8),enable = io.flush)
       }
+    }
   }
+
+  val init = ifGen(Init){
+    /* may be another way to write inst into */
+  }
+
 }
 
 object ITCM extends App{
-  val rtl = new RtlConfig().GenRTL(top = new ITCM(coreParameters(),ITCMParameters()))
+  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters(Init = true)))
 }
