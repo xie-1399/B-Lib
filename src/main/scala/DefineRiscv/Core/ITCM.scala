@@ -3,7 +3,7 @@ package DefineRiscv.Core
 import spinal.core._
 import spinal.lib._
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
-import spinal.lib.misc.HexTools
+import spinal.lib.misc.{BinTools, HexTools}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -25,14 +25,14 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
     val error = out Bool()
     val flush = ifGen(withFlush) {in Bool()}
   }
-  /* distribute ram */
+  /* 4 distribute ram */
   val addrWidth = log2Up(TCMDepth)
-  val last = (io.request.fetchCmd.pc(11).asBits === B"1") && (io.request.fetchCmd.pc(10).asBits === B"1")
-  val third = (io.request.fetchCmd.pc(11).asBits === B"1") && (io.request.fetchCmd.pc(10).asBits === B"0")
-  val first = (io.request.fetchCmd.pc(10).asBits === B"1")
+  val last = (io.request.fetchCmd.pc(addrWidth + 1).asBits === B"1") && (io.request.fetchCmd.pc(addrWidth).asBits === B"1")
+  val third = (io.request.fetchCmd.pc(addrWidth + 1).asBits === B"1") && (io.request.fetchCmd.pc(addrWidth).asBits === B"0")
+  val first = (io.request.fetchCmd.pc(addrWidth).asBits === B"1")
   val ready = if(withFlush) !io.flush else True
 
-  val idx = RegNextWhen(Mux(last,U(3),Mux(third,U(2),Mux(first,U(1),U(0)))),io.request.fetchCmd.fire)
+  val idx = RegNextWhen(Mux(last,U(TCMBlock - 1),Mux(third,U(TCMBlock - 2),Mux(first,U(TCMBlock - 3),U(TCMBlock - 4)))),io.request.fetchCmd.fire)
   val align = RegInit(True)
   val pcValue = RegNextWhen(io.request.fetchCmd.pc,io.request.fetchCmd.fire)
   when(io.request.fetchCmd.fire && io.request.fetchCmd.payload.pc(1 downto 0).asBits =/= B"00"){
@@ -77,10 +77,11 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
 
   val init = ifGen(Init){
     /* may be another way to write inst into */
+    HexTools.initRam(banks(0),"src/test/resources/add.hex",hexOffset = 0x80000000l)
   }
 
 }
 
 object ITCM extends App{
-  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters(Init = true)))
+  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters(Init = true,TCMBlock = 4,TCMDepth = 16384)))
 }
