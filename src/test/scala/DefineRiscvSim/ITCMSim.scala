@@ -10,6 +10,8 @@ import spinal.core.sim._
 import DefineSim.SimUntils.GenRandomList
 import spinal.lib.sim.{FlowMonitor, StreamDriver}
 import DefineSim.Logger._
+import spinal.lib.misc.HexTools
+
 import scala.collection.mutable
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
@@ -18,7 +20,7 @@ class ITCMSim extends AnyFunSuite {
 
   test("itcm read test ") {
     SIMCFG(compress = true).compile {
-      val dut = new ITCM(coreParameters(), ITCMParameters(withFlush = true))
+      val dut = new ITCM(coreParameters(), ITCMParameters())
       addSimPublic(mems = List(dut.banks(0), dut.banks(1), dut.banks(2), dut.banks(3)))
       dut
     }.doSimUntilVoid {
@@ -44,7 +46,7 @@ class ITCMSim extends AnyFunSuite {
 
         def signleBank(bankId:Int) = {
           load(bankId)
-          dut.io.flush #= false
+          // dut.io.flush #= false
           dut.clockDomain.waitSampling()
           /* wait sampling to the memory */
           val ref = get(bankId)
@@ -80,7 +82,7 @@ class ITCMSim extends AnyFunSuite {
           for(idx <- 0 until 4){
             load(idx)
           }
-          dut.io.flush #= false
+          // dut.io.flush #= false
           dut.clockDomain.waitSampling()
           /* wait sampling to the memory */
           val queue = mutable.Queue[BigInt]()
@@ -130,11 +132,43 @@ class ITCMSim extends AnyFunSuite {
         dut.io.flush #= true
         dut.io.request.fetchCmd.valid #= false
         dut.clockDomain.waitSampling(1024)
-        for(idx <- 0 until 10000){
+        for(idx <- 0 until 100000){
           val addr = 4 * Random.nextInt(256)
           assert(dut.banks(Random.nextInt(4)).getBigInt(addr) == 0)
         }
         simSuccess()
+    }
+  }
+
+
+  test("init the itcm code"){
+    SIMCFG(compress = true).compile {
+      val dut = new ITCM(coreParameters(), ITCMParameters(withFlush = true,TCMBlock = 1,TCMDepth = 16384))
+      addSimPublic(mems = List(dut.banks(0)))
+      HexTools.initRam(dut.banks(0),"src/test/resources/add.hex",hexOffset = 0x80000000l)
+      dut
+    }.doSim {
+      dut =>
+        dut.clockDomain.forkStimulus(10)
+        dut.io.flush #= false
+        dut.io.request.fetchCmd.valid #= false
+        dut.clockDomain.waitSampling()
+
+        /* read some instructions see */
+        def read(address:BigInt) = {
+          dut.io.request.fetchCmd.valid #= true
+          dut.io.request.fetchCmd.pc #= address
+          dut.io.request.fetchCmd.io #= true
+          dut.clockDomain.waitSamplingWhere(dut.io.request.fetchRsp.valid.toBoolean)
+          println("dut : " + HexStringWithWidth(dut.io.request.fetchRsp.payload.instruction.toLong.toHexString,8))
+          dut.io.request.fetchCmd.valid #= false
+          dut.clockDomain.waitSampling(10)
+        }
+        /* seems ready for it the add.hex ref: 04c0006f 34202f73 00800f93 03ff0a63 */
+        read(0x80000000l)
+        read(0x80000004l)
+        read(0x80000008l)
+        read(0x8000000Cl)
     }
   }
 }

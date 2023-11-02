@@ -21,24 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ************************************************************************************* */
+package DefineRiscv.Core.frontend
 
-package DefineRiscv.Core
-import frontend.ITCMParameters
-import spinal.lib.bus.amba4.axi.Axi4Config
+/* just trans the request to the axi and use the memory sim */
 
-case class coreParameters(resetValue:BigInt = 0x10000000l,
-                          withRVC:Boolean = false,
-                          ioRange:BigInt = 0x1,
-                          whiteBox:Boolean = false
-                         ){
-  def Xlen = 32
-  def instructionWidth = 32
-
-  def itcmParameters = ITCMParameters(TCMBlock = 1,TCMDepth = 16384) /* config the itcm */
-
-  def SimpleMemoryibusConfig = Axi4Config(addressWidth = 32,dataWidth = 32,useId = false,useBurst = false,
-    useQos = false,useLock = false,useResp = false,useRegion = false,useCache = false,useProt = false)
+class FetchNoCache {
 
 }
-
-

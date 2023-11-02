@@ -21,13 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  ***************************************************************************************/
+ //(Todo add fetch error and simulation )
 
-package DefineRiscv.Core
+package DefineRiscv.Core.frontend
 
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
-import spinal.core._
+import spinal.core.{U, _}
 import spinal.lib._
-
+import DefineRiscv.Core.{coreParameters, frontend}
+import spinal.lib.bus.amba4.axi._
 /* Fetch stage can convert the fetch cmd to the ITCM or DRAM */
 
 case class FetchCmd(p:coreParameters) extends Bundle{
@@ -49,8 +51,22 @@ case class FetchBus(p:coreParameters) extends Bundle with IMasterSlave {
     slave(fetchRsp)
   }
 
-  def toAxi4ReadOnly(): Unit = {
+  /*convert it to the axi4 readonly bus */
+  def toAxi4ReadOnly(): Axi4ReadOnly = {
+    val bus = Axi4ReadOnly(p.SimpleMemoryibusConfig)
+    val pcValue = RegNextWhen(fetchCmd.pc, bus.ar.fire) /* Todo */
 
+    bus.ar.valid := fetchCmd.valid
+    bus.ar.addr := fetchCmd.pc
+    fetchCmd.ready := bus.ar.ready
+    bus.ar.size := U(2).resized
+    bus.ar.len := U(0).resized
+    bus.r.ready := True
+
+    fetchRsp.instruction := bus.r.payload.data
+    fetchRsp.pc := pcValue
+    fetchRsp.valid := bus.r.valid
+    bus
   }
 }
 
@@ -59,7 +75,6 @@ case class FetchOut(p:coreParameters) extends Bundle {
   val instruction = Bits(p.instructionWidth bits)
 }
 
-
 class Fetch(p:coreParameters) extends PrefixComponent{
   import p._
   val io = new Bundle{
@@ -67,6 +82,7 @@ class Fetch(p:coreParameters) extends PrefixComponent{
     val flush = in Bool()
     val pcLoad = slave Flow(UInt(p.Xlen bits)) /* branch jump or exception jump*/
     val fetchOut = master Stream (FetchOut(p))
+    val fetchBus = master (FetchBus(p)) /* trans the no-IO request to the cache or simple memory */
   }
   val fetchRequest = FetchBus(p)
 
@@ -82,22 +98,38 @@ class Fetch(p:coreParameters) extends PrefixComponent{
   }
 
   val Fetch = new Area {
+
     when(fetchRequest.fetchRsp.valid){
       preFetch.inc := True
     }
-    /* check if the io request */
+    /* check if the io request OR dram request */
+    val itcm = new ITCM(p,p.itcmParameters)
+
+    itcm.io.request.fetchCmd.valid := False
+    itcm.io.request.fetchCmd.io := False
+    itcm.io.request.fetchCmd.payload.pc := preFetch.pc
+    io.fetchBus.fetchCmd.valid := False
+    io.fetchBus.fetchCmd.io := False
+    io.fetchBus.fetchCmd.payload.pc := preFetch.pc
 
     fetchRequest.fetchCmd.valid := preFetch.fetchValid
     fetchRequest.fetchCmd.io := fetchRequest.fetchCmd.pc(31 downto 28) === ioRange
     fetchRequest.fetchCmd.pc := preFetch.pc
 
+    when(fetchRequest.fetchCmd.io){
+      itcm.io.request <> fetchRequest
+    }.otherwise{
+      io.fetchBus <> fetchRequest
+    }
     io.fetchOut.valid := fetchRequest.fetchRsp.fire
     io.fetchOut.instruction := fetchRequest.fetchRsp.instruction
     io.fetchOut.pc := fetchRequest.fetchRsp.pc
   }
 
-  val whiteBox = new Area {
-
+  val whiteBox = ifGen(p.whiteBox) {
+    new Area {
+      /* add some simPublic() signals */
+    }
   }
 
 }

@@ -1,23 +1,41 @@
-package DefineRiscv.Core
+/** *************************************************************************************
+ * MIT License
+ *
+ * Copyright (c) 2023 xxl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * ************************************************************************************* */
+package DefineRiscv.Core.frontend
 
+import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core._
 import spinal.lib._
-import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
-import spinal.lib.misc.{BinTools, HexTools}
-
-import scala.collection.mutable.ArrayBuffer
-
+import DefineRiscv.Core.coreParameters
 
 case class ITCMParameters(TCMBlock:Int = 4,
                           TCMDepth:Int = 1024,
                           Sync:Boolean = true,
-                          withFlush:Boolean = false,
-                          Init:Boolean = false){
+                          withFlush:Boolean = false){
   def TCMSize = TCMBlock * TCMDepth
 }
 
 class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
-  import p._
   import itcm._
 
   val io = new Bundle{
@@ -31,8 +49,9 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
   val third = (io.request.fetchCmd.pc(addrWidth + 1).asBits === B"1") && (io.request.fetchCmd.pc(addrWidth).asBits === B"0")
   val first = (io.request.fetchCmd.pc(addrWidth).asBits === B"1")
   val ready = if(withFlush) !io.flush else True
+  val idx = if(TCMBlock != 1) RegNextWhen(Mux(last,U(TCMBlock - 1),Mux(third,U(TCMBlock - 2),Mux(first,U(TCMBlock - 3),U(TCMBlock - 4)))),io.request.fetchCmd.fire) else U(0)
 
-  val idx = RegNextWhen(Mux(last,U(TCMBlock - 1),Mux(third,U(TCMBlock - 2),Mux(first,U(TCMBlock - 3),U(TCMBlock - 4)))),io.request.fetchCmd.fire)
+
   val align = RegInit(True)
   val pcValue = RegNextWhen(io.request.fetchCmd.pc,io.request.fetchCmd.fire)
   when(io.request.fetchCmd.fire && io.request.fetchCmd.payload.pc(1 downto 0).asBits =/= B"00"){
@@ -75,13 +94,8 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
     }
   }
 
-  val init = ifGen(Init){
-    /* may be another way to write inst into */
-    HexTools.initRam(banks(0),"src/test/resources/add.hex",hexOffset = 0x80000000l)
-  }
-
 }
 
 object ITCM extends App{
-  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters(Init = true,TCMBlock = 4,TCMDepth = 16384)))
+  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters()))
 }
