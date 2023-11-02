@@ -23,18 +23,19 @@
  * ************************************************************************************* */
 
 package DefineRiscv.Core
-import frontend.ITCMParameters
+import frontend.TCMParameters
 import spinal.lib.bus.amba4.axi.Axi4Config
 
-case class coreParameters(resetValue:BigInt = 0x10000000l,
+case class coreParameters(resetValue:BigInt = 0x40000000l,
                           withRVC:Boolean = false,
                           ioRange:BigInt = 0x1,
+                          itcmRange:BigInt = 0x4,
                           whiteBox:Boolean = false
                          ){
   def Xlen = 32
   def instructionWidth = 32
 
-  def itcmParameters = ITCMParameters(TCMBlock = 1,TCMDepth = 16384) /* config the itcm */
+  def itcmParameters = TCMParameters(TCMBlock = 1,TCMDepth = 65536) /* config the itcm -> 1 * 64K*/
 
   def SimpleMemoryibusConfig = Axi4Config(addressWidth = 32,dataWidth = 32,useId = false,useBurst = false,
     useQos = false,useLock = false,useResp = false,useRegion = false,useCache = false,useProt = false)

@@ -28,15 +28,18 @@ import spinal.core._
 import spinal.lib._
 import DefineRiscv.Core.coreParameters
 
-case class ITCMParameters(TCMBlock:Int = 4,
+
+/* set the distribute big ram which can read and write */
+
+case class TCMParameters(TCMBlock:Int = 4,
                           TCMDepth:Int = 1024,
                           Sync:Boolean = true,
                           withFlush:Boolean = false){
   def TCMSize = TCMBlock * TCMDepth
 }
 
-class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
-  import itcm._
+class TCM(p:coreParameters,tcm:TCMParameters) extends PrefixComponent{
+  import tcm._
 
   val io = new Bundle{
     val request = slave(FetchBus(p))
@@ -96,6 +99,6 @@ class ITCM(p:coreParameters,itcm:ITCMParameters) extends PrefixComponent{
 
 }
 
-object ITCM extends App{
-  val rtl = new RtlConfig(path = "temp").GenRTL(top = new ITCM(coreParameters(),ITCMParameters()))
+object TCM extends App{
+  val rtl = new RtlConfig(path = "temp").GenRTL(top = new TCM(coreParameters(),TCMParameters()))
 }

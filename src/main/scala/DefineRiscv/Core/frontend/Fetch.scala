@@ -29,7 +29,9 @@ import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core.{U, _}
 import spinal.lib._
 import DefineRiscv.Core.{coreParameters, frontend}
+import spinal.core
 import spinal.lib.bus.amba4.axi._
+import spinal.core.sim._
 /* Fetch stage can convert the fetch cmd to the ITCM or DRAM */
 
 case class FetchCmd(p:coreParameters) extends Bundle{
@@ -103,7 +105,7 @@ class Fetch(p:coreParameters) extends PrefixComponent{
       preFetch.inc := True
     }
     /* check if the io request OR dram request */
-    val itcm = new ITCM(p,p.itcmParameters)
+    val itcm = new TCM(p,p.itcmParameters)
 
     itcm.io.request.fetchCmd.valid := False
     itcm.io.request.fetchCmd.io := False
@@ -129,11 +131,10 @@ class Fetch(p:coreParameters) extends PrefixComponent{
   val whiteBox = ifGen(p.whiteBox) {
     new Area {
       /* add some simPublic() signals */
+      for(idx <- 0 until p.itcmParameters.TCMBlock){
+        Fetch.itcm.banks(idx) simPublic()
+      }
     }
   }
 
 }
-
- object Fetch extends App{
-   val rtl = new RtlConfig().GenRTL(new Fetch(coreParameters()))
- }

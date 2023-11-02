@@ -1,8 +1,7 @@
 package DefineRiscvSim
 
-import DefineBus.SimpleBus.sim.SMBDriver
-import DefineBus.SimpleBus.{SMBMemory, simpleBusConfig}
-import DefineRiscv.Core.{ITCM, ITCMParameters, coreParameters}
+import DefineRiscv.Core.frontend.{TCM, TCMParameters}
+import DefineRiscv.Core.coreParameters
 import DefineSim.SIMCFG
 import DefineSim.SpinalSim.{ScoreBoardSimulation, addSimPublic}
 import org.scalatest.funsuite.AnyFunSuite
@@ -10,17 +9,17 @@ import spinal.core.sim._
 import DefineSim.SimUntils.GenRandomList
 import spinal.lib.sim.{FlowMonitor, StreamDriver}
 import DefineSim.Logger._
-import spinal.lib.misc.HexTools
+import spinal.lib.misc.{BinTools, HexTools}
 
 import scala.collection.mutable
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 
-class ITCMSim extends AnyFunSuite {
+class TCMSim extends AnyFunSuite {
 
   test("itcm read test ") {
     SIMCFG(compress = true).compile {
-      val dut = new ITCM(coreParameters(), ITCMParameters())
+      val dut = new TCM(coreParameters(), TCMParameters())
       addSimPublic(mems = List(dut.banks(0), dut.banks(1), dut.banks(2), dut.banks(3)))
       dut
     }.doSimUntilVoid {
@@ -123,7 +122,7 @@ class ITCMSim extends AnyFunSuite {
 
   test("flush it"){
     SIMCFG(compress = true).compile {
-      val dut = new ITCM(coreParameters(), ITCMParameters(withFlush = true))
+      val dut = new TCM(coreParameters(), TCMParameters(withFlush = true))
       addSimPublic(mems = List(dut.banks(0), dut.banks(1), dut.banks(2), dut.banks(3)))
       dut
     }.doSimUntilVoid {
@@ -143,9 +142,9 @@ class ITCMSim extends AnyFunSuite {
 
   test("init the itcm code"){
     SIMCFG(compress = true).compile {
-      val dut = new ITCM(coreParameters(), ITCMParameters(withFlush = true,TCMBlock = 1,TCMDepth = 16384))
+      val dut = new TCM(coreParameters(), TCMParameters(withFlush = true,TCMBlock = 1,TCMDepth = 16384))
       addSimPublic(mems = List(dut.banks(0)))
-      HexTools.initRam(dut.banks(0),"src/test/resources/add.hex",hexOffset = 0x80000000l)
+      BinTools.initRam(dut.banks(0),"src/test/resources/TCM/dhrystoneIM/dhrystone.bin")
       dut
     }.doSim {
       dut =>
