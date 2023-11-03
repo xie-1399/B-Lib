@@ -54,7 +54,6 @@ class TCM(p:coreParameters,tcm:TCMParameters) extends PrefixComponent{
   val ready = if(withFlush) !io.flush else True
   val idx = if(TCMBlock != 1) RegNextWhen(Mux(last,U(TCMBlock - 1),Mux(third,U(TCMBlock - 2),Mux(first,U(TCMBlock - 3),U(TCMBlock - 4)))),io.request.fetchCmd.fire) else U(0)
 
-
   val align = RegInit(True)
   val pcValue = RegNextWhen(io.request.fetchCmd.pc,io.request.fetchCmd.fire)
   when(io.request.fetchCmd.fire && io.request.fetchCmd.payload.pc(1 downto 0).asBits =/= B"00"){

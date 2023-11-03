@@ -92,8 +92,12 @@ class Fetch(p:coreParameters) extends PrefixComponent{
     val pc = Reg(UInt(Xlen bits)).init(resetValue)
     val pcNext = if(withRVC) pc + 2 else pc + 4
     val inc = False
-    pc := Mux(inc,pcNext,pc) /* if receive increase then pc plus */
-    val fetchValid = True.clearWhen(io.halt)
+    val reset = RegInit(True)
+    reset := False
+    pc := Mux(inc && !reset,pcNext,pc) /* if receive increase then pc plus */
+
+    val fetchValid = !reset && !io.halt
+
     when(io.pcLoad.valid) {
         pc := io.pcLoad.payload
     }
@@ -101,7 +105,7 @@ class Fetch(p:coreParameters) extends PrefixComponent{
 
   val Fetch = new Area {
 
-    when(fetchRequest.fetchRsp.valid){
+    when(fetchRequest.fetchRsp.valid && !io.pcLoad.valid ){
       preFetch.inc := True
     }
     /* check if the io request OR dram request */
@@ -115,7 +119,7 @@ class Fetch(p:coreParameters) extends PrefixComponent{
     io.fetchBus.fetchCmd.payload.pc := preFetch.pc
 
     fetchRequest.fetchCmd.valid := preFetch.fetchValid
-    fetchRequest.fetchCmd.io := fetchRequest.fetchCmd.pc(31 downto 28) === ioRange
+    fetchRequest.fetchCmd.io := fetchRequest.fetchCmd.pc(31 downto 28) === itcmRange
     fetchRequest.fetchCmd.pc := preFetch.pc
 
     when(fetchRequest.fetchCmd.io){

@@ -17,7 +17,7 @@ import spinal.lib.misc.{BinTools, HexTools}
 class FetchSim extends AnyFunSuite {
 
   test("fetch from the ITCM") {
-    SIMCFG(gtkFirst = true).compile {
+    SIMCFG(compress = true).compile {
       val parameters = coreParameters(whiteBox = true) /* the pc starts from the 0x10000000 */
       val dut = new Fetch(parameters)
       /* one bank itcm with init code to be tested */
@@ -35,19 +35,13 @@ class FetchSim extends AnyFunSuite {
           dut.clockDomain.waitSampling()
         }
         init()
-
-
-
+        dut.clockDomain.waitSampling(1024)
     }
   }
 
 
   test("fetch from the Dram withOut Cache "){
     /* monitor it with the axi readOnly memory */
-  }
-
-  test("with pcLoad jump and halt the cpu test "){
-
   }
 
 }
