@@ -55,7 +55,7 @@ case class FetchBus(p:coreParameters) extends Bundle with IMasterSlave {
   /*convert it to the axi4 readonly bus */
   def toAxi4ReadOnly(): Axi4ReadOnly = {
     val bus = Axi4ReadOnly(p.SimpleMemoryibusConfig)
-    val pcValue = RegNextWhen(fetchCmd.pc, bus.ar.fire) /* Todo */
+    val pcValue = RegNextWhen(fetchCmd.pc, bus.ar.fire)
 
     bus.ar.valid := fetchCmd.valid
     bus.ar.addr := fetchCmd.pc

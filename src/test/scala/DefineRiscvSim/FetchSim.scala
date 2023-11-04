@@ -66,18 +66,16 @@ class FetchSim extends AnyFunSuite {
     }
   }
 
-// Todo form the DRAM jump to the TCM (seems will ready)
-
   test("fetch from the Dram withOut Cache "){
     /* monitor it with the axi readOnly memory */
       SIMCFG(compress = true).compile {
         val parameters = coreParameters(whiteBox = true,resetValue = 0x80000000l)
         val dut = new FetchNoCache(parameters)
+        BinTools.initRam(dut.fetch.Fetch.itcm.banks(0),"src/test/resources/TCM/dhrystoneIM/dhrystone.bin")
         dut
       }.doSim{
       dut =>
         dut.clockDomain.forkStimulus(10)
-        BinTools.initRam(dut.fetch.Fetch.itcm.banks(0),"src/test/resources/TCM/dhrystoneIM/dhrystone.bin")
         dut.clockDomain.onSamplings {
           if (dut.fetch.io.fetchOut.valid.toBoolean) {
             val inst = HexStringWithWidth(dut.fetch.io.fetchOut.payload.instruction.toLong.toHexString, 8)
@@ -111,7 +109,6 @@ class FetchSim extends AnyFunSuite {
           dut.clockDomain.waitSampling()
         }
         jump(0x40000d14)
-
         dut.clockDomain.waitSamplingWhere {
           dut.fetch.io.halt.randomize()
           dut.fetch.io.fetchOut.payload.pc.toLong.toHexString == "40001210"

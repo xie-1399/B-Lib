@@ -24,8 +24,42 @@
 
 package DefineRiscv.Core.frontend
 
+import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
+import spinal.lib._
+import spinal.core._
+import DefineRiscv.Core.coreParameters
+import DefineRiscv._
+
 /* just using the custom decode unit trans the instruction */
 
-class Decode {
+object decodeConfig{
+  /* support the I M Set*/
+  def parameters = decodeParameters(withRVI = true,withRVM = true,withCsr = true)
+}
 
+case class DecodeOut(p:coreParameters) extends Bundle{
+  val ctrl = CtrlSignals(decodeConfig.parameters)
+  val pc = UInt(p.Xlen bits)
+}
+
+class Decode(p:coreParameters) extends PrefixComponent{
+
+  val io = new Bundle{
+    val decodeIn = slave Stream(FetchOut(p))
+    val decodeOut = master Stream(DecodeOut(p))
+  }
+
+  val customDecode = new CustomDecode(decodeConfig.parameters)
+  val inst = Stream(Bits(p.instructionWidth bits))
+  inst.arbitrationFrom(io.decodeIn)
+  inst.payload := io.decodeIn.payload.instruction
+  inst >> customDecode.io.inst
+
+  io.decodeOut.arbitrationFrom(customDecode.io.decodeOut)
+  io.decodeOut.payload.ctrl := customDecode.io.decodeOut
+  io.decodeOut.payload.pc := io.decodeIn.pc
+}
+
+object Decode extends App{
+  val rtl = new RtlConfig(path = "temp").GenRTL(top = new Decode(coreParameters()))
 }

@@ -23,7 +23,11 @@
  * ************************************************************************************* */
 
 package DefineRiscv.Core
+import DefineSim.SpinalSim.PrefixComponent
+import spinal.core._
+import spinal.lib._
 
-class top {
+class top extends PrefixComponent{
+  /* first connect the fetch and decode with the connect pipeline */
 
 }

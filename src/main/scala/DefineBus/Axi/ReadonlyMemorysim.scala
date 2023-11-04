@@ -119,7 +119,6 @@ case class AxiReadonlyMemorysim(axi : Axi4ReadOnly, clockDomain : ClockDomain, c
     val random = Random
     r.valid #= false
     setLast(r.payload, false)
-
     while (true) {
       if (pending_reads.nonEmpty) {
         var job = pending_reads.front
