@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  ***************************************************************************************/
- //(Todo add fetch error and simulation )
 
 package DefineRiscv.Core.frontend
 
@@ -77,6 +76,7 @@ case class FetchOut(p:coreParameters) extends Bundle {
   val instruction = Bits(p.instructionWidth bits)
 }
 
+
 class Fetch(p:coreParameters) extends PrefixComponent{
   import p._
   val io = new Bundle{
@@ -105,7 +105,7 @@ class Fetch(p:coreParameters) extends PrefixComponent{
 
   val Fetch = new Area {
 
-    when(fetchRequest.fetchRsp.valid && !io.pcLoad.valid ){
+    when(fetchRequest.fetchCmd.fire && !io.pcLoad.valid ){
       preFetch.inc := True
     }
     /* check if the io request OR dram request */

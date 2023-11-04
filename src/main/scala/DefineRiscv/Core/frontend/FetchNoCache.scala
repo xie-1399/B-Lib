@@ -44,8 +44,10 @@ class FetchNoCache(p:coreParameters) extends PrefixComponent{
   fetch.io.fetchBus.toAxi4ReadOnly() >> io.bus
 
   val whiteBox = ifGen(p.whiteBox){
+    fetch.io.fetchOut simPublic()
     fetch.io.halt simPublic()
     fetch.io.pcLoad simPublic()
+    fetch.Fetch.itcm.banks(0) simPublic()
   }
 }
 
