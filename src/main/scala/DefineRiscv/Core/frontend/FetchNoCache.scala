@@ -21,13 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ************************************************************************************* */
-
-package DefineRiscv.Core
-import DefineSim.SpinalSim.PrefixComponent
+package DefineRiscv.Core.frontend
 import spinal.core._
 import spinal.lib._
+import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
+import DefineRiscv.Core.coreParameters
+import spinal.core.sim.SimPublic
+import spinal.lib.bus.amba4.axi.Axi4ReadOnly
+import spinal.core.sim._
+/* just trans the request to the axi and use the memory sim */
 
-class top extends PrefixComponent{
-  /* first connect the fetch and decode with the connect pipeline */
+class FetchNoCache(p:coreParameters) extends PrefixComponent{
+  val io = new Bundle{
+    val bus = master (Axi4ReadOnly(p.SimpleMemoryibusConfig))
+  }
+  val fetch = new Fetch(p)
+  fetch.io.flush:= False
+  fetch.io.halt := False
+  fetch.io.pcLoad.valid := False
+  fetch.io.pcLoad.payload := 0
+  fetch.io.fetchOut.ready := True
+  fetch.io.fetchBus.toAxi4ReadOnly() >> io.bus
 
+  val whiteBox = ifGen(p.whiteBox){
+    fetch.io.fetchOut simPublic()
+    fetch.io.halt simPublic()
+    fetch.io.pcLoad simPublic()
+    fetch.Fetch.itcm.banks(0) simPublic()
+  }
 }
+
