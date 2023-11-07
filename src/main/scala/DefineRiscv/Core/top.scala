@@ -28,6 +28,5 @@ import spinal.core._
 import spinal.lib._
 
 class top extends PrefixComponent{
-  /* first connect the fetch and decode with the connect pipeline */
 
 }

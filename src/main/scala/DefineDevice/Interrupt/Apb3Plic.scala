@@ -39,7 +39,10 @@ class Apb3Plic(sourceCount : Int, targetCount : Int) extends PrefixComponent{
   )
 }
 
-/* test about it */
 object Apb3Plic extends App{
-  val rtl = new RtlConfig().GenRTL(top = new Apb3Plic(4,1))
+
+  import spinal.core.sim._
+
+
+
 }

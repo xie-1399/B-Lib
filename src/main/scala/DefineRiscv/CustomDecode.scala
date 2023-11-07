@@ -8,6 +8,7 @@ import DefineUntils.Untils._
  * the common decode unit in the risc-v 32 Arch
  * support config set and custom instruction
  * version 1 : just support the I set and Csr instruction
+ * just the combination logic enough
 */
 
 case class decodeParameters(withRVI:Boolean = true,
@@ -37,6 +38,7 @@ object BR extends SpinalEnum{
 /* the alu type instruction here */
 object ALU extends SpinalEnum{
   val ADD, SLL, SLT, SLTU, XOR, SRL, OR, AND, SUB, SRA, COPY = newElement()
+  val MUL,MULH,MULHSU,MULHU,DIV,DIVU,REM,REMU = newElement() /* add for the Mul and Div operation */
   defaultEncoding = SpinalEnumEncoding("alu")(
     ADD -> 0,
     SLL -> 1,
@@ -47,9 +49,18 @@ object ALU extends SpinalEnum{
     OR -> 6,
     AND -> 7,
     SUB -> (8 + 0),
+    MUL -> (9),
+    MULH -> 10,
+    MULHSU -> 11,
+    MULHU -> 12,
     SRA -> (8 + 5),
-    COPY -> 15
+    COPY -> 15,
+    DIV -> 16,
+    DIVU -> 17,
+    REM -> 18,
+    REMU -> 19
   )
+
 }
 
 /* memory operation at here */
@@ -109,29 +120,29 @@ object DecodeConstant{
 }
 
 
-class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComponent{
+class CustomDecode(p:decodeParameters) extends PrefixComponent{
   import Instructions._
   import DecodeConstant._
   import InstructionFMT._
   val io = new Bundle{
-    val inst = slave Stream Bits(32 bits)
-    val decodeOut = master Stream CtrlSignals(p)
+    val inst = in Bits(32 bits)
+    val valid = in Bool()
+    val decodeOut = out (CtrlSignals(p))
     val error = out Bool()
   }
   def Y = True
   def N = False
   val ctrl = CtrlSignals(p)
-  /* s complex switch of decode*/
-
-  val opcode = io.inst.payload(opcodeRange)
-  val rs1 = io.inst.payload(rs1Range).asUInt
-  val rs2 = io.inst.payload(rs2Range).asUInt
-  val rd = io.inst.payload(rdRange).asUInt
+  /* switch of decode*/
+  val opcode = io.inst(opcodeRange)
+  val rs1 = io.inst(rs1Range).asUInt
+  val rs2 = io.inst(rs2Range).asUInt
+  val rd = io.inst(rdRange).asUInt
   assignBundleWithList(ctrl,Seq(N,N,N,N,N,N,N,U(0,5 bits),U(0,5 bits),U(0,5 bits),OP1.RS1, OP2.RS2,Mask.WORD,BR.N,ALU.COPY,MemoryOp.NOT))
 
-  when(io.inst.valid){
+  when(io.valid){
     when(opcode === IM_R_FMT || opcode === A_R_FMT){
-      switch(io.inst.payload) {
+      switch(io.inst) {
         is(ADD) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
         is(SUB) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.SUB, MemoryOp.NOT))}
         is(XOR) {assignBundleWithList(ctrl, Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.XOR, MemoryOp.NOT))}
@@ -144,12 +155,21 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
         is(SLTU) {assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.SLTU, MemoryOp.NOT))}
         /* Todo add more M and A instruction here */
         ifGen(p.withRVA){}
-        ifGen(p.withRVM){}
+        ifGen(p.withRVM){ /* add the M extension */
+          is(MUL){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.MUL, MemoryOp.NOT))}
+          is(MULH){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.MULH, MemoryOp.NOT))}
+          is(MULHU){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.MULHU, MemoryOp.NOT))}
+          is(MULHSU){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.MULHSU, MemoryOp.NOT))}
+          is(DIV){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.DIV, MemoryOp.NOT))}
+          is(DIVU){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.DIVU, MemoryOp.NOT))}
+          is(REM){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.REM, MemoryOp.NOT))}
+          is(REMU){assignBundleWithList(ctrl,Seq(Y, Y, Y, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.RS2, Mask.WORD,BR.N, ALU.REMU, MemoryOp.NOT))}
+        }
       }
     }
       .elsewhen(equalWithList(opcode,Seq(I_IMM_FMT,I_LOAD_FMT,I_ENV_FMT,I_JALR_FMT))){
         /* Todo with ecall and ebreak */
-        switch(io.inst.payload){
+        switch(io.inst){
           is(ADDI) {assignBundleWithList(ctrl, Seq(Y, Y, N, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_I, Mask.WORD, BR.N, ALU.ADD, MemoryOp.NOT))}
           is(XORI) {assignBundleWithList(ctrl, Seq(Y, Y, N, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_I, Mask.WORD, BR.N, ALU.XOR, MemoryOp.NOT))}
           is(ORI) {assignBundleWithList(ctrl, Seq(Y, Y, N, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_I, Mask.WORD, BR.N, ALU.OR, MemoryOp.NOT))}
@@ -171,14 +191,14 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
 
       }
       .elsewhen(opcode === I_S_FMT){
-        switch(io.inst.payload){
+        switch(io.inst){
           is(SB){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_S, Mask.BYTE,BR.N, ALU.ADD, MemoryOp.STORE))}
           is(SH){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_S, Mask.HALF,BR.N, ALU.ADD, MemoryOp.STORE))}
           is(SW){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_S, Mask.WORD,BR.N, ALU.ADD, MemoryOp.STORE))}
         }
       }
       .elsewhen(opcode === I_B_FMT){
-        switch(io.inst.payload){
+        switch(io.inst){
           is(BEQ){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.EQ, ALU.ADD, MemoryOp.NOT))}
           is(BNE){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.NE, ALU.ADD, MemoryOp.NOT))}
           is(BLT){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.LT, ALU.ADD, MemoryOp.NOT))}
@@ -188,22 +208,20 @@ class CustomDecode(p:decodeParameters,insert:Boolean = false) extends PrefixComp
         }
       }
       .elsewhen(opcode === I_J_FMT){
-        switch(io.inst.payload){
+        switch(io.inst){
           is(JAL){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_J, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
         }
       }
       .elsewhen(equalWithList(opcode,Seq(I_LUI_FMT,I_AUIPC_FMT))){
-        switch(io.inst.payload){
+        switch(io.inst){
           is(LUI){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_U, Mask.WORD,BR.N, ALU.COPY, MemoryOp.NOT))}
           is(AUIPC){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_U, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
         }
       }
   }
-  val outCtrl = if(insert) RegNext(ctrl) else ctrl
-  io.decodeOut.payload := outCtrl
-  io.decodeOut.valid := io.inst.valid && outCtrl.illegal /* will catch the error */
-  io.error := io.inst.valid && !outCtrl.illegal
-  io.inst.ready := io.decodeOut.ready && outCtrl.illegal
+  val outCtrl = ctrl
+  io.decodeOut:= outCtrl
+  io.error := io.valid && !outCtrl.illegal
 }
 
 object CustomDecode extends App{

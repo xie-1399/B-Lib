@@ -28,7 +28,6 @@ import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core.{U, _}
 import spinal.lib._
 import DefineRiscv.Core.{coreParameters, frontend}
-import spinal.core
 import spinal.lib.bus.amba4.axi._
 import spinal.core.sim._
 /* Fetch stage can convert the fetch cmd to the ITCM or DRAM */
