@@ -8,7 +8,6 @@ object MuxOpearation {
 
   def muxwithOH = MuxOH
 
-  /* the Stream Mux  from the vec Stream with the Port */
-
-
+  /* the Stream Mux from the vec Stream with the Port */
+  def streamMux = StreamMux
 }
