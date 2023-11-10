@@ -32,14 +32,20 @@ object SimUntils {
     ref.deep == dut.deep
   }
 
+
   /* add trans function to simulate the spinal enum */
   def getEnumEncodingValue[T <: SpinalEnum](sim:SpinalEnumCraft[T]) = {
     sim.getEncoding.getValue(sim.toEnum)  /* the really encoding Big Int value in the simulation */
+    
+  /* convert value type to BigInt for simulation purpose */
+  class toBigInt {
+    def apply(value: Int) = {BigInt(value)}
+    def apply(value: Long) = {BigInt(value)}
+    def apply(value: Byte) = {BigInt(value)}
   }
 }
 
 object VecSim{
-
   /* use the seq to sim the vec value */
   def VecUInt(values: Seq[BigInt], vec: Vec[UInt]) = {
     require(values.length == vec.length)
@@ -71,7 +77,6 @@ object VecSim{
   }
 
   /* print format of the vector bits */
-
   def logout[T<:BitVector](values:Vec[T],seperate:Int) = {
     for(idx <- 0 until values.length){
       print(values(idx).toBigInt.toString() + "\t")
@@ -79,8 +84,5 @@ object VecSim{
         println()
       }
     }
-
   }
-
-
 }
