@@ -7,7 +7,7 @@ import spinal.lib.bus.amba4.axi._
 /*
  * convert the cmd and rsp request to the Axi Bus request
  * this is common request to trans cmd to the Axi4 Bus
- * Todo support the time out chain */
+ * test about the out of order */
 
 case class BusParameters(
                         addressWidth:Int = 32,

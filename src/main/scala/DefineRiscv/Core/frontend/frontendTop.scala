@@ -21,33 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ************************************************************************************* */
+package DefineRiscv.Core.frontend
 
-package DefineRiscv.Core
-import frontend.TCMParameters
-import spinal.lib.bus.amba4.axi.Axi4Config
+class frontendTop {
 
-case class coreParameters(resetValue:BigInt = 0x40000000l,
-                          withRVC:Boolean = false,
-                          ioRange:BigInt = 0x1,
-                          itcmRange:BigInt = 0x4,
-                          whiteBox:Boolean = false,
-                          regFileReadKind: RegFileReadKind = Async,
-                         ){
-  def Xlen = 32
-  def instructionWidth = 32
 
-  def itcmParameters = TCMParameters(TCMBlock = 1,TCMDepth = 65536) /* config the itcm -> 1 * 64K*/
 
-  def SimpleMemoryibusConfig = Axi4Config(addressWidth = 32,dataWidth = 32,useId = false,useBurst = false,
-    useQos = false,useLock = false,useResp = false,useRegion = false,useCache = false,useProt = false)
 
 }
-
-/*
- * using the trait like the Risc-v Core
- * two ways to read the read reg file ( default the async )
- * if judge it using the match sentence */
-
-trait RegFileReadKind
-object Async extends RegFileReadKind
-object Sync extends RegFileReadKind
