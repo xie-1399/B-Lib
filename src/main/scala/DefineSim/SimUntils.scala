@@ -32,6 +32,10 @@ object SimUntils {
     ref.deep == dut.deep
   }
 
+  /* add trans function to simulate the spinal enum */
+  def getEnumEncodingValue[T <: SpinalEnum](sim:SpinalEnumCraft[T]) = {
+    sim.getEncoding.getValue(sim.toEnum)  /* the really encoding Big Int value in the simulation */
+  }
 }
 
 object VecSim{
