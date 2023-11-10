@@ -76,13 +76,15 @@ object InstructionUntil {
     logger.close()
   }
 
+
+  /* using BigInt instead the parseInt */
   def binaryToHexString(value:String) = {
-    val res = HexStringWithWidth(Integer.parseInt(value,2).toHexString,8)
+    val res = HexStringWithWidth(BigInt(value,2).toLong.toHexString,8)
     res
   }
 
   def binaryToBigInt(value: String): Long = {
-    val res = Integer.parseInt(value, 2).toLong
+    val res =  BigInt(value,2).toLong
     res
   }
 

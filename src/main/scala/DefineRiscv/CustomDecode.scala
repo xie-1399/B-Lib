@@ -214,8 +214,8 @@ class CustomDecode(p:decodeParameters) extends PrefixComponent{
       }
       .elsewhen(equalWithList(opcode,Seq(I_LUI_FMT,I_AUIPC_FMT))){
         switch(io.inst){
-          is(LUI){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_U, Mask.WORD,BR.N, ALU.COPY, MemoryOp.NOT))}
-          is(AUIPC){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_U, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
+          is(LUI){assignBundleWithList(ctrl, Seq(Y, N, N, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_U, Mask.WORD,BR.N, ALU.COPY, MemoryOp.NOT))}
+          is(AUIPC){assignBundleWithList(ctrl, Seq(Y, N, N, Y, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_U, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
         }
       }
   }
