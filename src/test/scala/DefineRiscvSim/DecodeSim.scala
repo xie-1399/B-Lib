@@ -8,14 +8,14 @@ import org.scalatest.funsuite.AnyFunSuite
 import spinal.core.sim._
 import DefineRiscv.Core.frontend._
 import DefineRiscv.Core._
-import DefineRiscvSim.Untils.GenIR
+import DefineRiscvSim.Untils.GenMIR
 import spinal.lib.sim.StreamDriver
 
 /* for the decode purpose */
 
 class DecodeSim extends AnyFunSuite {
-
-  test("decode IR sim"){
+  /* the M and I R seems ready in the Decode */
+  test("decode MIR sim"){
     SIMCFG(compress = true).compile{
       val dut = new Decode(coreParameters())
       dut
@@ -23,7 +23,7 @@ class DecodeSim extends AnyFunSuite {
       dut =>
         /* Test R type */
         dut.clockDomain.forkStimulus(10)
-        val genR = GenIR.RandomIR(iter = 100000)
+        val genR = GenMIR.RandomMIR(iter = 100000,ISeed = 0.5) /* the Iseed represent I inst part */
         val length = genR.instValue.length
         var index = 0
 
