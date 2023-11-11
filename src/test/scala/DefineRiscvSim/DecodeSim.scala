@@ -90,9 +90,55 @@ class DecodeSim extends AnyFunSuite {
           }
           dut.clockDomain.waitSamplingWhere(index == length - 1)
         }
+
+        def testI(logClear: Boolean = true) = {
+          val genI = GenImm.RandomI(clear = logClear, iter = 10000)
+          val length = genI.instValue.length
+          var index = 0
+          dut.clockDomain.onSamplings(
+            if (dut.io.decodeOut.valid.toBoolean) {
+              /* check the model */
+              checkOut(genI, index)
+            }
+          )
+          /* add I type simulation here*/
+          StreamDriver(dut.io.decodeIn, dut.clockDomain) {
+            payload =>
+              payload.instruction #= genI.instValue(index)
+              payload.pc #= index
+              index += 1
+              true
+          }
+          dut.clockDomain.waitSamplingWhere(index == length - 1)
+        }
+
+        def testMem(logClear: Boolean = true) = {
+          val genMem = GenMem.RandomMem(clear = logClear, iter = 100)
+          val length = genMem.instValue.length
+          var index = 0
+          dut.clockDomain.onSamplings(
+            if (dut.io.decodeOut.valid.toBoolean) {
+              /* check the model */
+              checkOut(genMem, index)
+            }
+          )
+          /* add memory type simulation here*/
+          StreamDriver(dut.io.decodeIn, dut.clockDomain) {
+            payload =>
+              payload.instruction #= genMem.instValue(index)
+              payload.pc #= index
+              index += 1
+              true
+          }
+          dut.clockDomain.waitSamplingWhere(index == length - 1)
+        }
+
+
         
         //testMIR()
-        testU(logClear = false)
+        //testU()
+        //testI()
+        //testMem()
         simSuccess()
     }
   }
