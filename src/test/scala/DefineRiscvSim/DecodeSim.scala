@@ -133,12 +133,34 @@ class DecodeSim extends AnyFunSuite {
           dut.clockDomain.waitSamplingWhere(index == length - 1)
         }
 
+        def testBJ(logClear: Boolean = true) = {
+          val genMem = GenBJ.RandomBJ(clear = logClear, iter = 10000)
+          val length = genMem.instValue.length
+          var index = 0
+          dut.clockDomain.onSamplings(
+            if (dut.io.decodeOut.valid.toBoolean) {
+              /* check the model */
+              checkOut(genMem, index)
+            }
+          )
+          /* add memory type simulation here*/
+          StreamDriver(dut.io.decodeIn, dut.clockDomain) {
+            payload =>
+              payload.instruction #= genMem.instValue(index)
+              payload.pc #= index
+              index += 1
+              true
+          }
+          dut.clockDomain.waitSamplingWhere(index == length - 1)
+        }
 
-        
+
+        /* sim all the decode is ready for the IM */
         //testMIR()
         //testU()
         //testI()
         //testMem()
+        //testBJ()
         simSuccess()
     }
   }
