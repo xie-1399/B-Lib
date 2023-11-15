@@ -5,7 +5,6 @@ import spinal.lib._
 import spinal.lib.bus.amba4.axi._
 import DefineSim.SpinalSim._
 
-//simple memory to test axi driver
 class SimpleAxiMemory(axi4Config: Axi4Config) extends Component {
   val io = new Bundle{
     val bus = slave(Axi4(axi4Config))
