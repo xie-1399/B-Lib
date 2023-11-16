@@ -58,11 +58,11 @@ object PipelineConnect {
     val pipelineConnect = new PipelineConnectModule[T](left.payloadType)
     if(moduleName.nonEmpty) pipelineConnect.setName(moduleName.get)
 
-    pipelineConnect.io.dataIn <> left
+    pipelineConnect.io.dataIn.connectFrom(left)
     pipelineConnect.io.block := block
     pipelineConnect.io.flush := flush
     pipelineConnect.io.rightOutfire := rightOutFire
-    pipelineConnect.io.dataOut <> right
+    right.connectFrom(pipelineConnect.io.dataOut)
   }
 
 }
