@@ -79,7 +79,7 @@ class Regfile(p:coreParameters) extends PrefixComponent{
 
   def write(addr:UInt,data:Bits): Unit = {regfile.write(addr,data)}
   io.rs1Data := read(io.rs1,p.regFileReadKind)
-  io.rs2Data:= read(io.rs2,p.regFileReadKind)
+  io.rs2Data := read(io.rs2,p.regFileReadKind)
 
   when(io.write && io.rd =/= 0){
     write(io.rd,io.data)
