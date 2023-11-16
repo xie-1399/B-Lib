@@ -126,8 +126,6 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
 }
 
 
-
-
 object RCache extends App{
   val rtl = new RtlConfig().GenRTL(new RCache(RCacheConfig(cacheSize = 4096, bytePerLine = 32, wayCount = 4, cmdDataWidth = 32, memDataWidth = 32,
     addressWidth = 32, WhiteBox = true)))
