@@ -7,9 +7,7 @@ import spinal.core.internals.Operator.BitVector
 import spinal.sim._
 import spinal.lib.sim._
 import spinal.core.sim._
-/*
-here set some simulation function until for the spinal sim
-*/
+import Logger._
 
 object SimUntils {
 
@@ -52,6 +50,29 @@ object SimUntils {
       BigInt(value)
     }
   }
+
+  /* the mask function when writing happens */
+  def getMaskValue(value:BigInt,dataWidth:Int,mask:Long,maskWidth:Int) = {
+    val real = HexStringWithWidth(value.toLong.toBinaryString,dataWidth)
+    val maskBits = mask.toBinaryString
+    var realBin = ""
+
+    val stride = dataWidth / maskWidth
+    val buffer  = ArrayBuffer[String]()
+    for(idx <- 0 until maskWidth){
+      if(maskBits(idx) == '1') buffer += real.substring(idx * stride,(idx + 1) * stride)
+      else buffer += HexStringWithWidth("0",stride)
+    }
+    println(buffer.mkString(","))
+    for(idx <- 0 until buffer.length){
+      realBin += buffer(idx)
+    }
+    println(realBin)
+
+  }
+}
+object test extends App{
+  SimUntils.getMaskValue(15,4,2,2)
 }
 
 object VecSim{
