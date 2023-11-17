@@ -7,10 +7,10 @@ import scala.util.Random
 import DefineMem.TCM._
 import spinal.core.sim._
 import DefineSim.Logger._
+import DefineSim.SimUntils._
 
 
 /* at beginning time there will be some init value in the memory */
-// Todo add a function tool to show the present the mask of the scala value
 
 class TCMSim extends AnyFunSuite {
 
@@ -38,15 +38,10 @@ class TCMSim extends AnyFunSuite {
 
         def writewithMask() = {
           for (idx <- 0 until dut.mem.wordCount) {
-
+            /* define the getMaskValue to test whether write the constant with mask in the memory */
             val random = math.pow(2,Random.nextInt(60)).toLong
-            val maskList = List(0,15)
-            val mask = maskList(Random.nextInt(2))
-            mask match {
-              case 15 => scoreboardInOrder.pushRef(BigInt(random))
-              case 0 => scoreboardInOrder.pushRef(BigInt(0))
-              case _ =>
-            }
+            val mask = Random.nextInt(16) /* because the maskWidth is 4 */
+            scoreboardInOrder.pushRef(getMaskValue(BigInt(random),64,mask = mask ,maskWidth = 4))
             dut.io.request.cmd.valid #= true
             dut.io.flush #= false
             dut.io.request.cmd.io #= true

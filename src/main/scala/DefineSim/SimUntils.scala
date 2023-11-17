@@ -51,10 +51,11 @@ object SimUntils {
     }
   }
 
-  /* the mask function when writing happens */
+  /* the mask function when writing happens
+  * getMaskValue(255,16,1,4) -> will get 15 */
   def getMaskValue(value:BigInt,dataWidth:Int,mask:Long,maskWidth:Int) = {
     val real = HexStringWithWidth(value.toLong.toBinaryString,dataWidth)
-    val maskBits = mask.toBinaryString
+    val maskBits = HexStringWithWidth(mask.toBinaryString,maskWidth)
     var realBin = ""
 
     val stride = dataWidth / maskWidth
@@ -63,16 +64,12 @@ object SimUntils {
       if(maskBits(idx) == '1') buffer += real.substring(idx * stride,(idx + 1) * stride)
       else buffer += HexStringWithWidth("0",stride)
     }
-    println(buffer.mkString(","))
+    /* println(buffer.mkString(",")) */
     for(idx <- 0 until buffer.length){
       realBin += buffer(idx)
     }
-    println(realBin)
-
+    BigInt(realBin,2)
   }
-}
-object test extends App{
-  SimUntils.getMaskValue(15,4,2,2)
 }
 
 object VecSim{
