@@ -23,7 +23,69 @@
  * ************************************************************************************* */
 
 package DefineRiscv.Core.backend
+import spinal.core._
+import spinal.lib._
+import DefineSim.SpinalSim._
+import DefineSim._
+import DefineRiscv.Core._
+import DefineRiscv.Core.frontend.{DecodeOut, decodeConfig}
+import DefineRiscv.CtrlSignals
+import DefineRiscv._
 
-class Excute {
 
+case class ExcuteOut(p:coreParameters) extends Bundle{
+  val res = Bits(p.Xlen bits)
+  val ctrl = CtrlSignals(decodeConfig.parameters)
+  val pc = UInt(p.Xlen bits)
+}
+
+class Excute(p:coreParameters) extends PrefixComponent{
+  import ALU._
+  val io = new Bundle{
+    val excuteIn = slave Stream(DecodeOut(p))
+    val excuteOut = master Stream(ExcuteOut(p))
+  }
+
+  def isMulDiv(ctrl:CtrlSignals): Bool = {
+    val res =  ctrl.alu.mux(
+      MUL -> True,
+      MULH -> True,
+      MULHSU -> True,
+      MULHU -> True,
+      DIV -> True,
+      DIVU -> True,
+      REMU -> True,
+      REM -> True,
+      default -> False
+    )
+    res
+  }
+
+
+  val ctrl = io.excuteIn.ctrl
+  val isMul = io.excuteIn.ctrl.illegal && isMulDiv(ctrl)
+
+  /* set the alu unit */
+  val alu = new Area{
+    val aluUnit = new ALUPlugin(p)
+    aluUnit.io.alu := ctrl.alu
+    aluUnit.io.op1 := io.excuteIn.realOp1
+    aluUnit.io.op2 := io.excuteIn.realOp2
+  }
+  io.excuteOut.arbitrationFrom(io.excuteIn)
+  io.excuteOut.payload.pc := io.excuteIn.payload.pc
+  io.excuteOut.payload.res := alu.aluUnit.io.res
+  io.excuteOut.payload.ctrl := io.excuteIn.ctrl
+
+  /* set the mul and div unit */
+  val muldiv = new Area{
+    //Todo add it support the mul and div
+    
+  }
+
+}
+
+
+object Excute extends App{
+  val rtl = new RtlConfig().GenRTL(new Excute(coreParameters()))
 }

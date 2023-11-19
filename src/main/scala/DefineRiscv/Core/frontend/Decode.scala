@@ -93,7 +93,7 @@ class Decode(p:coreParameters) extends PrefixComponent{
   }
 
   when(ctrl.op2 =/= OP2.RS2 && !user2){
-    realOp2 := getIMM(io.decodeIn.instruction,ctrl.op2.asBits) // Todo
+    realOp2 := getIMM(io.decodeIn.instruction,ctrl.op2.asBits)
   }.elsewhen(ctrl.op2 === OP2.RS2 && user2){
     realOp2 := io.rs2Data
   }

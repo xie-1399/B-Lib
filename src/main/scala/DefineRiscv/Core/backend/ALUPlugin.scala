@@ -25,63 +25,37 @@
 package DefineRiscv.Core.backend
 import DefineRiscv._
 import DefineRiscv.Core._
-import DefineSim.SpinalSim.PrefixComponent
+import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core._
 import spinal.lib._
 
+/* rebuild the ALU unit and contains all Todo simulation */
 
-class Alu(p:coreParameters) extends PrefixComponent {
-  import p._
+class ALUPlugin(p:coreParameters) extends PrefixComponent{
   import ALU._
-  val io  = new Bundle{
-    val func = in(ALU)
-    val doSub = in Bool()
-    val src0 = in Bits(Xlen bits)
-    val src1 = in Bits(Xlen bits)
-    val result = out Bits(Xlen bits)
-    val adder = out UInt(Xlen bits)
-    val actual = out SInt(Xlen bits)
-  }
-  //add and sub(or just divide)
-  val addSub = (io.src0.asSInt + Mux(io.doSub, ~io.src1, io.src1).asSInt + Mux(io.doSub,S(1),S(0))).asBits //notice not S"0"
-
-  //if just want match some types(logic)
-  val bitwise = io.func.mux(
-    AND -> (io.src1 & io.src0),
-    OR -> (io.src0 | io.src1),
-    XOR -> (io.src0 ^ io.src1),
-    default -> io.src0
-  )
-
-  //SLT SLTU
-  val less = Mux(io.src0.asSInt < io.src1.asSInt , B"1", B"0") //Todo with msb
-
-
-  //get results
-  io.result := io.func.mux(
-    (ADD,SUB) -> addSub,
-    (SLT,SLTU) -> less.asBits.resized,
-    default -> bitwise
-  )
-  io.adder := addSub.asUInt.resized
-  io.actual := addSub.asSInt.resized
-}
-
-class Compare(srcWidth:Int) extends Component{
-  //compare two numbers
   val io = new Bundle{
-    val sign = in Bool()
-    val src0 = in Bits(srcWidth bits)
-    val src1 = in Bits(srcWidth bits)
-    val ltx = out Bool()
-    val eq = out Bool()
+    val alu = in (ALU())
+    val op1 = in Bits(p.Xlen bits)
+    val op2 = in Bits(p.Xlen bits)
+    val res = out Bits(p.Xlen bits)
   }
 
-  //sign or unsign compare
-  when(io.sign) {
-    io.ltx := io.src0.asSInt < io.src1.asSInt
-  }.otherwise {
-    io.ltx := io.src0.asUInt < io.src1.asUInt
-  }
-  io.eq := io.src0 === io.src1
+  val bitsCal = io.alu.mux(
+    AND -> (io.op1 & io.op2),
+    OR -> (io.op1 | io.op2),
+    XOR -> (io.op1 ^ io.op2),
+    default -> io.op1
+  )
+  val lessU = io.alu === SLTU
+  val less = Mux(lessU,io.op1.asUInt < io.op2.asUInt,io.op1.asSInt < io.op1.asSInt)
+
+  val doSub = io.alu === SUB
+  val addSub = Mux(doSub,io.op1.asSInt - io.op2.asSInt,io.op1.asSInt + io.op2.asSInt).asBits
+
+  io.res := io.alu.mux(
+    (SLT,SLTU) -> less.asBits.resized,
+    (ADD,SUB) -> addSub,
+    default -> bitsCal
+  )
+
 }
