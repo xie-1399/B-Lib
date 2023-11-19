@@ -7,9 +7,7 @@ import spinal.core.internals.Operator.BitVector
 import spinal.sim._
 import spinal.lib.sim._
 import spinal.core.sim._
-/*
-here set some simulation function until for the spinal sim
-*/
+import Logger._
 
 object SimUntils {
 
@@ -37,11 +35,51 @@ object SimUntils {
   def getEnumEncodingValue[T <: SpinalEnum](sim:SpinalEnumCraft[T]) = {
     sim.getEncoding.getValue(sim.toEnum) /* the really encoding Big Int value in the simulation */
   }
+  
   /* convert value type to BigInt for simulation purpose */
   class toBigInt {
-    def apply(value: Int) = {BigInt(value)}
-    def apply(value: Long) = {BigInt(value)}
-    def apply(value: Byte) = {BigInt(value)}
+    def apply(value: Int) = {
+      BigInt(value)
+    }
+
+    def apply(value: Long) = {
+      BigInt(value)
+    }
+
+    def apply(value: Byte) = {
+      BigInt(value)
+    }
+  }
+
+  /* the mask function when writing happens
+  * getMaskValue(255,16,1,4) -> will get 15 */
+  def getMaskValue(value:BigInt,dataWidth:Int,mask:Long,maskWidth:Int) = {
+    val real = HexStringWithWidth(value.toLong.toBinaryString,dataWidth)
+    val maskBits = HexStringWithWidth(mask.toBinaryString,maskWidth)
+    var realBin = ""
+
+    val stride = dataWidth / maskWidth
+    val buffer  = ArrayBuffer[String]()
+    for(idx <- 0 until maskWidth){
+      if(maskBits(idx) == '1') buffer += real.substring(idx * stride,(idx + 1) * stride)
+      else buffer += HexStringWithWidth("0",stride)
+    }
+    /* println(buffer.mkString(",")) */
+    for(idx <- 0 until buffer.length){
+      realBin += buffer(idx)
+    }
+    BigInt(realBin,2)
+  }
+
+  /* get the bits value from the range and should be include left and right range */
+  def getBitsValueInRange(data:BigInt,range: Range,dataWidth:Int,little:Boolean = true) = {
+    val binary = HexStringWithWidth(data.toLong.toBinaryString,dataWidth)
+    val start = range.start
+    val end = range.end
+    val lstart = dataWidth - 1 - end
+    val lend = dataWidth - 1 - start
+    val bitsBin = if(little) binary.substring(lstart,lend + 1) else binary.substring(start , end + 1)
+    BigInt(bitsBin,2)
   }
 }
 
