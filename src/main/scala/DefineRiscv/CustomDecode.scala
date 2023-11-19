@@ -199,12 +199,12 @@ class CustomDecode(p:decodeParameters) extends PrefixComponent{
       }
       .elsewhen(opcode === I_B_FMT){
         switch(io.inst){
-          is(BEQ){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.EQ, ALU.ADD, MemoryOp.NOT))}
-          is(BNE){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.NE, ALU.ADD, MemoryOp.NOT))}
-          is(BLT){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.LT, ALU.ADD, MemoryOp.NOT))}
-          is(BGE){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.GE, ALU.ADD, MemoryOp.NOT))}
-          is(BLTU){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.LTU, ALU.ADD, MemoryOp.NOT))}
-          is(BGEU){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_B, Mask.WORD,BR.GEU, ALU.ADD, MemoryOp.NOT))}
+          is(BEQ){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.EQ, ALU.ADD, MemoryOp.NOT))}
+          is(BNE){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.NE, ALU.ADD, MemoryOp.NOT))}
+          is(BLT){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.LT, ALU.ADD, MemoryOp.NOT))}
+          is(BGE){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.GE, ALU.ADD, MemoryOp.NOT))}
+          is(BLTU){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.LTU, ALU.ADD, MemoryOp.NOT))}
+          is(BGEU){assignBundleWithList(ctrl, Seq(Y, Y, Y, N, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_B, Mask.WORD,BR.GEU, ALU.ADD, MemoryOp.NOT))}
         }
       }
       .elsewhen(opcode === I_J_FMT){
@@ -214,8 +214,8 @@ class CustomDecode(p:decodeParameters) extends PrefixComponent{
       }
       .elsewhen(equalWithList(opcode,Seq(I_LUI_FMT,I_AUIPC_FMT))){
         switch(io.inst){
-          is(LUI){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_U, Mask.WORD,BR.N, ALU.COPY, MemoryOp.NOT))}
-          is(AUIPC){assignBundleWithList(ctrl, Seq(Y, N, N, Y, Y, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_U, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
+          is(LUI){assignBundleWithList(ctrl, Seq(Y, N, N, Y, N, N, N, rs1, rs2, rd, OP1.RS1, OP2.IMM_U, Mask.WORD,BR.N, ALU.COPY, MemoryOp.NOT))}
+          is(AUIPC){assignBundleWithList(ctrl, Seq(Y, N, N, Y, N, N, N, rs1, rs2, rd, OP1.PC, OP2.IMM_U, Mask.WORD,BR.N, ALU.ADD, MemoryOp.NOT))}
         }
       }
   }

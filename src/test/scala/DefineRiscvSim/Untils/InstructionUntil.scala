@@ -66,23 +66,28 @@ object InstructionUntil {
     "REMU" -> 19
   )
 
-  def log(path:String = "./instruction.log",clear:Boolean = true,
+
+  def log(path:String = "./instruction.asm",clear:Boolean = true,
           inst:ArrayBuffer[String],instString:ArrayBuffer[String]) = {
     assert(inst.length == instString.length)
     val logger = CreateloggerFile(path, clear)
+    logger.write("test" + ".elf:     file format elf32-littleriscv\n\n\n")
+    logger.write("Disassembly of section .text:\n\n00000000 <main>:\n")
     for(idx <- 0 until inst.length){
-      logger.write(binaryToHexString(inst(idx)) + "\t" + instString(idx) + "\t" + inst(idx) + "\n")
+      logger.write(HexStringWithWidth((idx * 4).toLong.toHexString,8)+ "\t" + binaryToHexString(inst(idx)) + "\t" + instString(idx) + "\n")
     }
     logger.close()
   }
 
+
+  /* using BigInt instead the parseInt */
   def binaryToHexString(value:String) = {
-    val res = HexStringWithWidth(Integer.parseInt(value,2).toHexString,8)
+    val res = HexStringWithWidth(BigInt(value,2).toLong.toHexString,8)
     res
   }
 
   def binaryToBigInt(value: String): Long = {
-    val res = Integer.parseInt(value, 2).toLong
+    val res =  BigInt(value,2).toLong
     res
   }
 

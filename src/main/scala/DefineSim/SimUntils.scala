@@ -35,7 +35,7 @@ object SimUntils {
   def getEnumEncodingValue[T <: SpinalEnum](sim:SpinalEnumCraft[T]) = {
     sim.getEncoding.getValue(sim.toEnum) /* the really encoding Big Int value in the simulation */
   }
-
+  
   /* convert value type to BigInt for simulation purpose */
   class toBigInt {
     def apply(value: Int) = {

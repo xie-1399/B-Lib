@@ -21,41 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ************************************************************************************* */
-
-package DefineRiscv.Core
-import DefinePipeline.PipelineConnect
-import DefineRiscv.Core.frontend._
-import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
-import spinal.core._
-import spinal.lib._
+package DefineRiscv.Core.backend
 
 
-/* Todo simulation about the whole top */
 
-class top(p:coreParameters) extends PrefixComponent{
+class Lsu {
 
-  val io = new Bundle{
-    val halt = in Bool()
-    val flush = in Bool()
-  }
-
-  val fetch = new Fetch(p)
-  val decode = new Decode(p)
-  val regfile = new Regfile(p)
-
-  val pipeline = PipelineConnect(fetch.io.fetchOut,decode.io.decodeIn,True,io.flush,io.halt)
-
-  /* connect regfile and decode */
-  decode.io.rs1Data := regfile.io.rs1Data
-  decode.io.rs2Data := regfile.io.rs2Data
-  regfile.io.rs1 := decode.io.rs1
-  regfile.io.rs2 := decode.io.rs2
-
-  decode.io.decodeOut.ready := True
-
-}
-
-object top extends App{
-
-  val rtl = new RtlConfig().GenRTL(new top(coreParameters()))
 }

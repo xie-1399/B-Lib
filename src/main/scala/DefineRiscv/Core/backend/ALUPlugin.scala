@@ -22,40 +22,40 @@
  * SOFTWARE.
  * ************************************************************************************* */
 
-package DefineRiscv.Core
-import DefinePipeline.PipelineConnect
-import DefineRiscv.Core.frontend._
+package DefineRiscv.Core.backend
+import DefineRiscv._
+import DefineRiscv.Core._
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core._
 import spinal.lib._
 
+/* rebuild the ALU unit and contains all Todo simulation */
 
-/* Todo simulation about the whole top */
-
-class top(p:coreParameters) extends PrefixComponent{
-
+class ALUPlugin(p:coreParameters) extends PrefixComponent{
+  import ALU._
   val io = new Bundle{
-    val halt = in Bool()
-    val flush = in Bool()
+    val alu = in (ALU())
+    val op1 = in Bits(p.Xlen bits)
+    val op2 = in Bits(p.Xlen bits)
+    val res = out Bits(p.Xlen bits)
   }
 
-  val fetch = new Fetch(p)
-  val decode = new Decode(p)
-  val regfile = new Regfile(p)
+  val bitsCal = io.alu.mux(
+    AND -> (io.op1 & io.op2),
+    OR -> (io.op1 | io.op2),
+    XOR -> (io.op1 ^ io.op2),
+    default -> io.op1
+  )
+  val lessU = io.alu === SLTU
+  val less = Mux(lessU,io.op1.asUInt < io.op2.asUInt,io.op1.asSInt < io.op1.asSInt)
 
-  val pipeline = PipelineConnect(fetch.io.fetchOut,decode.io.decodeIn,True,io.flush,io.halt)
+  val doSub = io.alu === SUB
+  val addSub = Mux(doSub,io.op1.asSInt - io.op2.asSInt,io.op1.asSInt + io.op2.asSInt).asBits
 
-  /* connect regfile and decode */
-  decode.io.rs1Data := regfile.io.rs1Data
-  decode.io.rs2Data := regfile.io.rs2Data
-  regfile.io.rs1 := decode.io.rs1
-  regfile.io.rs2 := decode.io.rs2
+  io.res := io.alu.mux(
+    (SLT,SLTU) -> less.asBits.resized,
+    (ADD,SUB) -> addSub,
+    default -> bitsCal
+  )
 
-  decode.io.decodeOut.ready := True
-
-}
-
-object top extends App{
-
-  val rtl = new RtlConfig().GenRTL(new top(coreParameters()))
 }
