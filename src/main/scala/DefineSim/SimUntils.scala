@@ -70,6 +70,17 @@ object SimUntils {
     }
     BigInt(realBin,2)
   }
+
+  /* get the bits value from the range and should be include left and right range */
+  def getBitsValueInRange(data:BigInt,range: Range,dataWidth:Int,little:Boolean = true) = {
+    val binary = HexStringWithWidth(data.toLong.toBinaryString,dataWidth)
+    val start = range.start
+    val end = range.end
+    val lstart = dataWidth - 1 - end
+    val lend = dataWidth - 1 - start
+    val bitsBin = if(little) binary.substring(lstart,lend + 1) else binary.substring(start , end + 1)
+    BigInt(bitsBin,2)
+  }
 }
 
 object VecSim{

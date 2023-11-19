@@ -12,7 +12,7 @@ import spinal.core.sim._
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io
-//create logfile in the Accelerator project
+import scala.collection.mutable.ArrayBuffer
 
 object Logger {
   /* the print format of the log value*/
@@ -70,6 +70,22 @@ object Logger {
     }
   }
 
+  /* fill the string with the word */
+  def fillWithWordIndex(value:String,valueWidth:Int,dataWidth:Int,word:Int,fill:String = "0") = {
+    require(dataWidth % valueWidth == 0)
+    require(value.length == valueWidth)
+    val groups = dataWidth % valueWidth
+    var realbin = ""
+    for(idx <- 0 until groups){
+      if(idx == word ) {
+        realbin += value
+      }else{
+        // realbin += HexStringWithWidth(fill,valueWidth)
+      }
+    }
+    println(realbin)
+    // BigInt(realbin,2)
+  }
 
   def CreateloggerFile(logpath: String = "./results.log", clear: Boolean = false) = {
     if (clear) {
@@ -148,4 +164,10 @@ class CustomReporter extends Reporter {
       case _ => // Handle other event types, if necessary
     }
   }
+}
+
+
+object test extends App{
+  val Hex = Logger.HexStringWithWidth("100101",32)
+  Logger.fillWithWordIndex(Hex,32,256,4)
 }
