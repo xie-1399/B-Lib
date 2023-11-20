@@ -16,7 +16,7 @@ case class RCacheMemRsp(p:RCacheConfig) extends Bundle{
   val error = Bool()
 }
 
-case class RCacheBus(p:RCacheConfig) extends Bundle with IMasterSlave{
+case class RCacheMemBus(p:RCacheConfig) extends Bundle with IMasterSlave{
   val cmd = Stream(RCacheMemCmd(p))
   val rsp = Flow(RCacheMemRsp(p))
   override def asMaster() = {

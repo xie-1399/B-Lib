@@ -10,6 +10,7 @@ import DefineSim.Logger._
 
 /* the RCache is a read-only Cache and get more learning in the memory
 *  when the cache hit it will get the data withIn one cycle
+*  this is a block cache and the cmd will block if not hit value
 * Todo test about the position */
 
 /**
@@ -39,7 +40,7 @@ case class RCacheConfig(cacheSize:Int,
                        flushIt:Boolean = true,
                        busDefault:Boolean = false,
                        preResetFlush:Boolean = true,
-                       bankWidthReduce:Boolean = false,
+                       bankWidthReduce:Boolean = true,
                        WhiteBox:Boolean = false,
                       ){
   def burstSize = bytePerLine * 8 / memDataWidth /* the bus will trans one cache line spend cycles */
@@ -74,6 +75,7 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
   val io = new Bundle{
     val flush = ifGen(flushIt){in Bool()}
     val driver = slave(RCacheDriverBus(p))
+    val mem = master(RCacheMemBus(p))
   }
 
   case class lineTag() extends Bundle{
@@ -87,6 +89,8 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
   /* sep the banks from ways */
   val bankWidth = if(bankWidthReduce) memDataWidth else bytePerLine * 8
   val banks = Seq.fill(wayCount)(Mem(Bits(bankWidth bits),bankDepth))
+  val wayRandom = CounterFreeRun(p.wayCount)
+
   val ways = Seq.fill(wayCount)(
     new Area {
       val tags = Mem(lineTag(),wayLineCount)
@@ -147,7 +151,26 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
     }
 
     val memCmd = new Area{
-
+      val busy = RegInit(False)
+      when(HitIt.cacheMiss){
+        busy := True
+      }
+      io.mem.cmd.address := io.driver.cmd.physicalAddress
+      io.mem.cmd.size := bytePerLine / memDataWidth - 1
+      io.mem.cmd.valid := busy
+      val fillTag = lineTag()
+      fillTag.valid := False
+      fillTag.tag := 0
+      val addr = RegNextWhen(io.driver.cmd.payload.physicalAddress,io.driver.cmd.isStall)
+      val writeCounter = Counter(bytePerLine / memDataWidth)
+      // Todo how to choose the random way
+      when(io.mem.rsp.valid){
+        fillTag.valid := True
+        fillTag.tag := addr(tagRange)
+        ways(0).tags.write(addr(lineRange),fillTag)
+        banks(0).write(addr(readIdx) + writeCounter,io.mem.rsp.data)
+        writeCounter.increment()
+      }
     }
 
   }
