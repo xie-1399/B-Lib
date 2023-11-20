@@ -22,7 +22,40 @@
  * SOFTWARE.
  * ************************************************************************************* */
 package DefineRiscv.Core.backend
+import DefineRiscv.ALU
+import spinal.core._
+import spinal.lib._
+import DefineSim.SpinalSim.PrefixComponent
+import DefineRiscv.Core._
 
-class MulDivPlugin {
+/* should know more about the M extension meaning
+* and the simple mul is likely the alu plugin (but not good to use It)*/
 
+class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent{
+  import ALU._
+  val io = new Bundle{
+    val valid = in Bool()
+    val alu = in (ALU())
+    val op1 = in Bits (p.Xlen bits)
+    val op2 = in Bits (p.Xlen bits)
+    val res = out Bits (p.Xlen bits)
+  }
+  val low = 31 downto 0
+  val high = 63 downto 32
+  /* Todo the signal simple unit */
+  val mul = io.alu.mux(
+    MUL -> ((io.op1.asSInt * io.op2.asSInt).asBits)(low),
+    MULH -> ((io.op1.asSInt * io.op2.asSInt).asBits)(high),
+  )
+
+  when(io.valid){
+    ???
+  }.otherwise{
+    io.res := B(0,p.Xlen bits)
+  }
+}
+
+
+object SimpleMulDivPlugin{
+  
 }
