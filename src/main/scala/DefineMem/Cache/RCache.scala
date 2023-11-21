@@ -11,7 +11,7 @@ import DefineSim.Logger._
 /* the RCache is a read-only Cache and get more learning in the memory
 *  when the cache hit it will get the data withIn one cycle
 *  this is a block cache and the cmd will block if not hit value
-* Todo test about the position */
+*/
 
 /**
  * the parameters of the ReadOnly Cache
@@ -22,12 +22,11 @@ import DefineSim.Logger._
  * @param cmdDataWidth
  * @param memDataWidth
  * @param catchIllegalAccess
- * @param byPass if by pass will send to bus and to the memory
  * @param flushIt
  * @param busDefault the axi4 config can be default
  * @param preResetFlush
  * @param bankWidthReduce show whether the cache mem width is the cache line bits width
- * @param WhiteBox
+ * @param WhiteBox test for debug about the cache
  */
 case class RCacheConfig(cacheSize:Int,
                        bytePerLine:Int,
@@ -36,10 +35,9 @@ case class RCacheConfig(cacheSize:Int,
                        cmdDataWidth:Int,
                        memDataWidth:Int,
                        catchIllegalAccess:Boolean = true,
-                       byPass:Boolean = false,
                        flushIt:Boolean = true,
                        busDefault:Boolean = false,
-                       preResetFlush:Boolean = true,
+                       preResetFlush:Boolean = false,
                        bankWidthReduce:Boolean = true,
                        WhiteBox:Boolean = false,
                       ){
@@ -89,7 +87,6 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
   /* sep the banks from ways */
   val bankWidth = if(bankWidthReduce) memDataWidth else bytePerLine * 8
   val banks = Seq.fill(wayCount)(Mem(Bits(bankWidth bits),bankDepth))
-  val wayRandom = CounterFreeRun(p.wayCount)
 
   val ways = Seq.fill(wayCount)(
     new Area {
@@ -151,35 +148,46 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
     }
 
     val memCmd = new Area{
-      val busy = RegInit(False)
-      when(HitIt.cacheMiss){
-        busy := True
-      }
-      io.mem.cmd.address := io.driver.cmd.physicalAddress
+      val busy = RegInit(False).setWhen(HitIt.cacheMiss).clearWhen(io.mem.cmd.fire)
+      io.mem.cmd.address := io.driver.cmd.physicalAddress(tagRange.high downto lineRange.low) @@ U(0,lineRange.low bits) /* the address send*/
       io.mem.cmd.size := bytePerLine / memDataWidth - 1
       io.mem.cmd.valid := busy
-      val fillTag = lineTag()
-      fillTag.valid := False
-      fillTag.tag := 0
       val addr = RegNextWhen(io.driver.cmd.payload.physicalAddress,io.driver.cmd.isStall)
       val writeCounter = Counter(bytePerLine / memDataWidth)
-      // Todo how to choose the random way
+      val fillLineReady = RegInit(False)
+      val wayAllocate = Counter(wayCount,!busy)
+
+      val write = new Area {
+        val writeTag = ways.map(_.tags.writePort())
+        val writeBank = banks.map(_.writePort())
+      }
+
+      for(wayId <- 0 until wayCount){
+        val wayHit = wayId === wayAllocate.value
+        val tag = write.writeTag(wayId)
+        tag.valid := wayHit && fillLineReady
+        tag.payload.data.tag := addr(tagRange)
+        tag.payload.data.valid := True
+        tag.payload.address := addr(lineRange)
+
+        val data = write.writeBank(wayId)
+        data.valid := wayHit
+        data.payload.data := io.mem.rsp.data
+        data.payload.address := addr(readIdx)
+      }
       when(io.mem.rsp.valid){
-        fillTag.valid := True
-        fillTag.tag := addr(tagRange)
-        ways(0).tags.write(addr(lineRange),fillTag)
-        banks(0).write(addr(readIdx) + writeCounter,io.mem.rsp.data)
         writeCounter.increment()
+        when(writeCounter.willOverflowIfInc){
+          fillLineReady := True
+        }
       }
     }
-
   }
 
   io.driver.rsp.valid := RegNext(io.driver.cmd.fire)
   io.driver.rsp.data := HitIt.data
   io.driver.rsp.cacheMiss := HitIt.cacheMiss
   io.driver.rsp.error := alignError
-
 
   val whiteBox = ifGen(WhiteBox) {
     new Area {
@@ -235,5 +243,5 @@ class RCache(p:RCacheConfig) extends PrefixComponent{
 
 object RCache extends App{
   val rtl = new RtlConfig().GenRTL(new RCache(RCacheConfig(cacheSize = (32 KiB).toInt, bytePerLine = 32, wayCount = 4, cmdDataWidth = 32, memDataWidth = 32,
-    addressWidth = 32, WhiteBox = true)))
+    addressWidth = 32)))
 }

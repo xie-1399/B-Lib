@@ -49,8 +49,8 @@ object MemOperation{
       mem.setBigInt(address,data)
     }
 
-    /* if want to create read or write port -> use the api is enough */
-
+    /* if want to create read or write port -> use the api is enough
+    * the example is in the mem play */
 
 }
 
