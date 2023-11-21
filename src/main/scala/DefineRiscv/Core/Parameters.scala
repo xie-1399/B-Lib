@@ -31,6 +31,7 @@ case class coreParameters(resetValue:BigInt = 0x40000000l,
                           ioRange:BigInt = 0x1,
                           itcmRange:BigInt = 0x4,
                           whiteBox:Boolean = false,
+                          simpleMulAndDiv:Boolean = true,
                           regFileReadKind: RegFileReadKind = Async,
                          ){
   def Xlen = 32

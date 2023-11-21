@@ -25,7 +25,7 @@ package DefineRiscv.Core.backend
 import DefineRiscv.ALU
 import spinal.core._
 import spinal.lib._
-import DefineSim.SpinalSim.PrefixComponent
+import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import DefineRiscv.Core._
 
 /* should know more about the M extension meaning
@@ -42,20 +42,39 @@ class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent{
   }
   val low = 31 downto 0
   val high = 63 downto 32
-  /* Todo the signal simple unit */
-  val mul = io.alu.mux(
+
+  def mixMul(op1:SInt,op2:UInt):Bits = {
+    val sign = op1.msb
+    val res = Bits((op1.getWidth + op2.getWidth) bits)
+    when(sign){
+      val temp = (op1 * op2.asSInt).asBits
+      res := temp.asBits
+    }.otherwise {
+      res := (op1.asUInt * op2).asBits
+    }
+    res
+  }
+
+  val res = io.alu.mux(
     MUL -> ((io.op1.asSInt * io.op2.asSInt).asBits)(low),
     MULH -> ((io.op1.asSInt * io.op2.asSInt).asBits)(high),
+    MULHSU -> mixMul(io.op1.asSInt,io.op2.asUInt)(high),
+    MULHU -> ((io.op1.asUInt * io.op2.asUInt).asBits)(high),
+    DIVU -> (io.op1.asUInt / io.op2.asUInt).asBits,
+    DIV -> (io.op1.asSInt / io.op2.asSInt).asBits,
+    REMU -> (io.op1.asUInt % io.op2.asUInt).asBits,
+    REM -> (io.op1.asSInt % io.op2.asSInt).asBits,
+    default -> io.op1
   )
 
   when(io.valid){
-    ???
+    io.res := res
   }.otherwise{
     io.res := B(0,p.Xlen bits)
   }
 }
 
 
-object SimpleMulDivPlugin{
-  
+object SimpleMulDivPlugin extends App {
+  val rtl = new RtlConfig().GenRTL(new SimpleMulDivPlugin(coreParameters()))
 }
