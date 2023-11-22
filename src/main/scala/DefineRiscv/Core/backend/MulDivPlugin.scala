@@ -46,14 +46,24 @@ class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent {
   val low = 31 downto 0
   val high = 63 downto 32
 
-  val sign = io.op1.asBits.msb
-  val temp = Mux(sign,(io.op1.asSInt * io.op2.asSInt).asBits,(io.op1.asUInt * io.op2.asUInt).asBits)
+  /* the mul switch */
+  val opSigned = io.alu.mux(
+    MUL -> (B"11"),
+    MULH -> (B"11"),
+    MULHSU -> (B"10"),
+    MULHU -> (B"00"),
+    default -> (B"00")
+  )
 
-  val res = io.alu.mux(
-    MUL -> ((io.op1.asSInt * io.op2.asSInt).asBits)(low),
-    MULH -> ((io.op1.asSInt * io.op2.asSInt).asBits)(high),
-    MULHSU -> temp(high), //Todo
-    MULHU -> ((io.op1.asUInt * io.op2.asUInt).asBits)(high),
+  val mulop1 = ((opSigned.lsb ? io.op1.msb | False) ## io.op1).asSInt
+  val mulop2 = ((opSigned.msb ? io.op2.msb | False) ## io.op2).asSInt
+  val temp = (mulop1 * mulop2)
+  val lowRes = temp(low).asBits
+  val highRes = temp(high).asBits
+
+  val result = io.alu.mux(
+    MUL -> lowRes,
+    (MULH,MULHSU,MULHU) -> highRes,
     DIVU -> (io.op1.asUInt / io.op2.asUInt).asBits,
     DIV -> (io.op1.asSInt / io.op2.asSInt).asBits,
     REMU -> (io.op1.asUInt % io.op2.asUInt).asBits,
@@ -62,7 +72,7 @@ class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent {
   )
 
   when(io.valid) {
-    io.res := res
+    io.res := result
   }.otherwise {
     io.res := B(0, p.Xlen bits)
   }

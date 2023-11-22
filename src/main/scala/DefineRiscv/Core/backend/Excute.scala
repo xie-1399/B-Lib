@@ -76,21 +76,18 @@ class Excute(p:coreParameters) extends PrefixComponent{
     aluUnit.io.valid := isAlu
   }
 
-  val muldiv = new Area{
-
+  val muldiv = ifGen(p.simpleMulAndDiv){
+    new Area{
+      val simple = new SimpleMulDivPlugin(p)
+      simple.io.alu := ctrl.alu
+      simple.io.op1 := io.excuteIn.realOp1
+      simple.io.op2  := io.excuteIn.realOp2
+      simple.io.valid := isMul
+    }
   }
 
   io.excuteOut.arbitrationFrom(io.excuteIn)
   io.excuteOut.payload.pc := io.excuteIn.payload.pc
-  io.excuteOut.payload.res := alu.aluUnit.io.res
+  io.excuteOut.payload.res := Mux(isMul,muldiv.simple.io.res,alu.aluUnit.io.res)
   io.excuteOut.payload.ctrl := io.excuteIn.ctrl
-
-  /* set the mul and div unit */
-
-
-}
-
-
-object Excute extends App{
-  val rtl = new RtlConfig().GenRTL(new Excute(coreParameters()))
 }

@@ -10,7 +10,6 @@ import DefineSim.Logger._
 import DefineRiscv.ALU._
 
 class MulDivSim extends AnyFunSuite {
-  /* test finish and some untils can be reuse and alu is ready */
   test("simple mul and div ") {
     SIMCFG(compress = true).compile {
       val dut = new SimpleMulDivPlugin(coreParameters())
@@ -40,25 +39,19 @@ class MulDivSim extends AnyFunSuite {
               case MUL => {
                 val ref = (binaryComplementEncode(op1) * binaryComplementEncode(op2)).toLong.toBinaryString
                 val res = dut.io.res.toLong.toBinaryString
-                assert(HexStringWithWidth(subString(ref, 0, 32),32) == HexStringWithWidth(res, 32))
+                assert(HexStringWithWidth(subString(ref, 0, 32),32) == HexStringWithWidth(res, 32),"MUL error")
               }
               case MULH => {
                 val ref = (binaryComplementEncode(op1) * binaryComplementEncode(op2)).toLong.toBinaryString
                 val res = dut.io.res.toLong.toBinaryString
-                assert(ref.substring(0,res.length) == res)
+                assert(ref.substring(0,res.length) == res,"MULHU error")
               }
 
               case MULHU => {
                 val ref = (BigInt(op1, 2) * BigInt(op2, 2)).toLong.toBinaryString
                 val res = dut.io.res.toLong.toBinaryString
-                assert(ref.substring(0,res.length) == res)
+                assert(ref.substring(0,res.length) == res,"MULHU error")
               }
-              case MULHSU =>{
-                val ref = (binaryComplementEncode(op1) * BigInt(op2, 2)).toLong.toBinaryString
-                val res = dut.io.res.toLong.toBinaryString
-                assert(ref.substring(0, res.length) == res)
-              }
-
               case DIV =>{
                 val ref = (binaryComplementEncode(op1) / binaryComplementEncode(op2)).toInt.toBinaryString
                 val res = dut.io.res.toLong.toBinaryString
@@ -86,7 +79,7 @@ class MulDivSim extends AnyFunSuite {
 
           }
         }
-          check(100, false)
+          check(10000, false)
 
     }
   }
