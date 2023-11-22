@@ -42,35 +42,4 @@ object SimUntils {
     }
   }
 
-  //Todo remove to the Logger
-  def binaryComplementEncode(binaryString: String): BigInt = {
-    val isNegative = binaryString(0) == '1'
-    val bigInt = BigInt(binaryString, 2)
-    if (isNegative) {
-      /* calculate the complement */
-      val complement = bigInt - (BigInt(1) << binaryString.length)
-      complement
-    } else {
-      bigInt
-    }
-  }
-
-  //Todo move to the sim until
-  def subString(bin:String,start:Int,end:Int,left:Boolean = false):String = {
-    require(end >= start)
-    if(left) bin.substring(start,end)
-    else {
-      val len = bin.length
-      bin.substring(len-end,len-start)
-    }
-  }
-
-  //Todo remove to the spinal sim
-  def getRandomValue[T](list: List[T],num:Int = 1) = {
-    require(num < list.length)
-    val random = Random.nextInt(list.length)
-    val value = list(random)
-    value
-  }
-
 }

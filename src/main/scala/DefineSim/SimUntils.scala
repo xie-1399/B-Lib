@@ -21,6 +21,14 @@ object SimUntils {
     res
   }
 
+  /* from the list get the random value */
+  def getOneRandomValue[T](list: List[T], num: Int = 1) = {
+    require(num < list.length)
+    val random = Random.nextInt(list.length)
+    val value = list(random)
+    value
+  }
+
   def logwithCycle(simTime:String,content:String): Unit = {
     println(s"[${simTime}]\t" + content)
   }
@@ -80,6 +88,16 @@ object SimUntils {
     val lend = dataWidth - 1 - start
     val bitsBin = if(little) binary.substring(lstart,lend + 1) else binary.substring(start , end + 1)
     BigInt(bitsBin,2)
+  }
+
+  /* more way to use the substring */
+  def subString(bin: String, start: Int, end: Int, left: Boolean = false): String = {
+    require(end >= start)
+    if (left) bin.substring(start, end)
+    else {
+      val len = bin.length
+      bin.substring(len - end, len - start)
+    }
   }
 }
 

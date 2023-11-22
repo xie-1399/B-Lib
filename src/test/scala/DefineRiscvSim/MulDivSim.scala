@@ -8,6 +8,7 @@ import spinal.core.sim._
 import Untils.SimUntils._
 import DefineSim.Logger._
 import DefineRiscv.ALU._
+import DefineSim.SimUntils._
 
 class MulDivSim extends AnyFunSuite {
   test("simple mul and div ") {
@@ -22,7 +23,7 @@ class MulDivSim extends AnyFunSuite {
 
         def check(iter: Int = 100, logIt: Boolean = false) = {
           for (idx <- 0 until iter) {
-            val randFunc = getRandomValue(operationList)
+            val randFunc = getOneRandomValue(operationList)
             dut.io.valid #= true
             val op1 = generateOP(32)
             val op2 = generateOP(32)

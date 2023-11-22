@@ -39,7 +39,6 @@ case class FlushBus(p:RCacheConfig) extends Bundle with IMasterSlave{
 /* the read cmd driver the cache */
 case class RCacheDriverCmd(p:RCacheConfig) extends Bundle{
   val physicalAddress = UInt(p.addressWidth bits)
-  val byPass = ifGen(p.byPass) {Bool()}
 }
 
 case class RCacheDriverRsp(p:RCacheConfig) extends Bundle{

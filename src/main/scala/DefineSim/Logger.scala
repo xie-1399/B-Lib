@@ -74,6 +74,19 @@ object Logger {
     }
   }
 
+  /* from the binary get the signal value */
+  def binaryComplementEncode(binaryString: String): BigInt = {
+    val isNegative = binaryString(0) == '1'
+    val bigInt = BigInt(binaryString, 2)
+    if (isNegative) {
+      /* calculate the complement */
+      val complement = bigInt - (BigInt(1) << binaryString.length)
+      complement
+    } else {
+      bigInt
+    }
+  }
+
   /* fill the string with the word */
   def fillWithWordIndex(value:String,valueWidth:Int,dataWidth:Int,word:Int,fill:String = "0") = {
     require(dataWidth % valueWidth == 0)
