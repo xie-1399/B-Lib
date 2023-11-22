@@ -9,6 +9,7 @@ import DefineRiscv.Core._
 import DefineRiscv.ALU._
 import scala.util.Random
 import DefineSim.Logger._
+import Untils.SimUntils._
 
 class ALUPluginSim extends AnyFunSuite {
   /* test finish and some untils can be reuse and alu is ready */
@@ -19,54 +20,6 @@ class ALUPluginSim extends AnyFunSuite {
     }.doSim {
       dut =>
         dut.clockDomain.forkStimulus(10)
-
-        def binaryComplementEncode(binaryString: String): BigInt = {
-          val isNegative = binaryString(0) == '1'
-          val bigInt = BigInt(binaryString, 2)
-          if (isNegative) {
-            /* calculate the complement */
-            val complement = bigInt - (BigInt(1) << binaryString.length)
-            complement
-          } else {
-            bigInt
-          }
-        }
-
-        def generateOP(dataWidth: Int,bias:Boolean = false , over:Boolean = false) = {
-          if(bias && over){throw new Exception("gen op error")}
-          var op = ""
-          for (idx <- 0 until dataWidth) {
-            if(idx == 0 && (bias || over)){
-              if(bias) op += "1"
-              if(over) op += "0"
-            }else{
-              val seed = Random.nextInt(10)
-              val ch = if (seed > 5) "1" else "0"
-              op += ch
-            }
-          }
-          op
-        }
-
-        def shift(bin:String,dataWidth:Int,shiftValue:Int,left:Boolean = true,logic:Boolean = true) = {
-          require(bin.length <= dataWidth)
-          /* the left will fill with 0 and right may fill signal */
-          val value = BigInt(bin,2)
-          if(left){
-            val temp = (value << shiftValue).toLong.toBinaryString
-            val leftBin = if(temp.length < dataWidth) HexStringWithWidth(temp,dataWidth) else temp.substring(temp.length - dataWidth,temp.length)
-            leftBin
-          }else{
-            val temp = HexStringWithWidth(bin,dataWidth)
-            val sign = temp(0)
-            if(logic){
-              ("0" * shiftValue ) + temp.substring(0,dataWidth - shiftValue)
-            }else{
-              (sign.toString * shiftValue ) + temp.substring(0,dataWidth - shiftValue)
-            }
-          }
-
-        }
 
         val Alu = List(ADD, SUB, SRA, SLT, SLTU, SRL, SLL, AND, OR, XOR,COPY)
 
@@ -92,8 +45,6 @@ class ALUPluginSim extends AnyFunSuite {
               println("op2 : " + binaryComplementEncode(op2))
               println("res : " + binaryComplementEncode(HexStringWithWidth(dut.io.res.toLong.toBinaryString,32)))
             }
-
-
             randFunc match {
               case 0 => assert(binaryComplementEncode(HexStringWithWidth(dut.io.res.toLong.toBinaryString,32)) == binaryComplementEncode(op1) + binaryComplementEncode(op2), "ADD wrong")
               case 1 => assert(binaryComplementEncode(HexStringWithWidth(dut.io.res.toLong.toBinaryString,32)) == binaryComplementEncode(op1) - binaryComplementEncode(op2), "SUB wrong")

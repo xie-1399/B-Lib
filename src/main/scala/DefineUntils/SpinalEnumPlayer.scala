@@ -6,9 +6,11 @@ import DefineUntils.Defineencoding.{four, newElement, one, three, two}
 import spinal.core._
 import spinal.lib._
 import DefineSim.SimUntils._
+import spinal.core.sim._
 /*
  * here is an example for using the SpinalEnum writing player
- * show about the simulation about the encoding */
+ * show about the simulation about the encoding
+ * and think about the data type change when happens */
 
 object Defineencoding extends SpinalEnum{
   val one,two,three,four = newElement()
@@ -31,12 +33,20 @@ class SpinalEnumPlayer extends PrefixComponent{
   val io = new Bundle{
     val driver = in Bits(3 bits)
     val simIn = in (Defineencoding())
+    val raw = in Bits(4 bits)
   }
   /* so as bits is not signal like */
   val get_one = io.driver === Defineencoding.one.asBits
   val get_two = io.driver === Defineencoding.two.asBits
   val get_three = io.driver === Defineencoding.three.asBits
   val get_four = io.driver === Defineencoding.four.asBits
+  val toSint = io.raw.asSInt
+  val toUint = io.raw.asUInt
+
+  val whiteBox = new Area{
+    toSint.simPublic()
+    toUint.simPublic()
+  }
 }
 
 /* using the spinal Enum sim tools to get the real encoding value */
@@ -49,9 +59,13 @@ object SpinalEnumPlayer extends App{
   }.doSim{
     dut =>
       dut.clockDomain.forkStimulus(10)
+
+      dut.io.raw.randomize()
       dut.clockDomain.onSamplings{
         /* so if you want to get the value should use like this */
-        println(getEnumEncodingValue(dut.io.simIn))  /* the to bigInt will show the number in order */
+        println(dut.toSint.toBigInt)
+        println(dut.toUint.toLong)
+        //println(getEnumEncodingValue(dut.io.simIn))  /* the to bigInt will show the number in order */
       }
 
       def operation() = {

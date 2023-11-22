@@ -27,15 +27,18 @@ import spinal.core._
 import spinal.lib._
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import DefineRiscv.Core._
+import DefineSim.SIMCFG
 
 /* should know more about the M extension meaning
-* and the simple mul is likely the alu plugin (but not good to use It)*/
+* and the simple mul is likely the alu plugin (but not good to use It) */
 
-class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent{
+class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent {
+
   import ALU._
-  val io = new Bundle{
+
+  val io = new Bundle {
     val valid = in Bool()
-    val alu = in (ALU())
+    val alu = in(ALU())
     val op1 = in Bits (p.Xlen bits)
     val op2 = in Bits (p.Xlen bits)
     val res = out Bits (p.Xlen bits)
@@ -43,22 +46,13 @@ class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent{
   val low = 31 downto 0
   val high = 63 downto 32
 
-  def mixMul(op1:SInt,op2:UInt):Bits = {
-    val sign = op1.msb
-    val res = Bits((op1.getWidth + op2.getWidth) bits)
-    when(sign){
-      val temp = (op1 * op2.asSInt).asBits
-      res := temp.asBits
-    }.otherwise {
-      res := (op1.asUInt * op2).asBits
-    }
-    res
-  }
+  val sign = io.op1.asBits.msb
+  val temp = Mux(sign,(io.op1.asSInt * io.op2.asSInt).asBits,(io.op1.asUInt * io.op2.asUInt).asBits)
 
   val res = io.alu.mux(
     MUL -> ((io.op1.asSInt * io.op2.asSInt).asBits)(low),
     MULH -> ((io.op1.asSInt * io.op2.asSInt).asBits)(high),
-    MULHSU -> mixMul(io.op1.asSInt,io.op2.asUInt)(high),
+    MULHSU -> temp(high), //Todo
     MULHU -> ((io.op1.asUInt * io.op2.asUInt).asBits)(high),
     DIVU -> (io.op1.asUInt / io.op2.asUInt).asBits,
     DIV -> (io.op1.asSInt / io.op2.asSInt).asBits,
@@ -67,14 +61,10 @@ class SimpleMulDivPlugin(p:coreParameters) extends PrefixComponent{
     default -> io.op1
   )
 
-  when(io.valid){
+  when(io.valid) {
     io.res := res
-  }.otherwise{
-    io.res := B(0,p.Xlen bits)
+  }.otherwise {
+    io.res := B(0, p.Xlen bits)
   }
-}
 
-
-object SimpleMulDivPlugin extends App {
-  val rtl = new RtlConfig().GenRTL(new SimpleMulDivPlugin(coreParameters()))
 }
