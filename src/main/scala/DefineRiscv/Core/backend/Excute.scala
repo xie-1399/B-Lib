@@ -63,7 +63,9 @@ class Excute(p:coreParameters) extends PrefixComponent{
 
 
   val ctrl = io.excuteIn.ctrl
-  val isMul = io.excuteIn.ctrl.illegal && isMulDiv(ctrl)
+  val mulDiv = isMulDiv(ctrl)
+  val isMul = io.excuteIn.ctrl.illegal && mulDiv
+  val isAlu = io.excuteIn.ctrl.illegal && (!mulDiv)
 
   /* set the alu unit */
   val alu = new Area{
@@ -71,21 +73,21 @@ class Excute(p:coreParameters) extends PrefixComponent{
     aluUnit.io.alu := ctrl.alu
     aluUnit.io.op1 := io.excuteIn.realOp1
     aluUnit.io.op2 := io.excuteIn.realOp2
+    aluUnit.io.valid := isAlu
   }
+
+  val muldiv = ifGen(p.simpleMulAndDiv){
+    new Area{
+      val simple = new SimpleMulDivPlugin(p)
+      simple.io.alu := ctrl.alu
+      simple.io.op1 := io.excuteIn.realOp1
+      simple.io.op2  := io.excuteIn.realOp2
+      simple.io.valid := isMul
+    }
+  }
+
   io.excuteOut.arbitrationFrom(io.excuteIn)
   io.excuteOut.payload.pc := io.excuteIn.payload.pc
-  io.excuteOut.payload.res := alu.aluUnit.io.res
+  io.excuteOut.payload.res := Mux(isMul,muldiv.simple.io.res,alu.aluUnit.io.res)
   io.excuteOut.payload.ctrl := io.excuteIn.ctrl
-
-  /* set the mul and div unit */
-  val muldiv = new Area{
-    //Todo add it support the mul and div
-    
-  }
-
-}
-
-
-object Excute extends App{
-  val rtl = new RtlConfig().GenRTL(new Excute(coreParameters()))
 }

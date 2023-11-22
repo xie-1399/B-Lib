@@ -29,12 +29,13 @@ import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core._
 import spinal.lib._
 
-/* rebuild the ALU unit and contains all Todo simulation */
+/* rebuild the ALU unit and contains all */
 
 class ALUPlugin(p:coreParameters) extends PrefixComponent{
   import ALU._
   val io = new Bundle{
     val alu = in (ALU())
+    val valid = in Bool()
     val op1 = in Bits(p.Xlen bits)
     val op2 = in Bits(p.Xlen bits)
     val res = out Bits(p.Xlen bits)
@@ -44,18 +45,24 @@ class ALUPlugin(p:coreParameters) extends PrefixComponent{
     AND -> (io.op1 & io.op2),
     OR -> (io.op1 | io.op2),
     XOR -> (io.op1 ^ io.op2),
+    SLL -> (io.op1 |<< io.op2.asUInt), /* logic shift */
+    SRL -> (io.op1 |>> io.op2.asUInt),
+    SRA -> (io.op1.asSInt >> io.op2.asUInt).asBits, /* the arithmetic shift using */
     default -> io.op1
   )
   val lessU = io.alu === SLTU
-  val less = Mux(lessU,io.op1.asUInt < io.op2.asUInt,io.op1.asSInt < io.op1.asSInt)
+  val less = Mux(lessU,io.op1.asUInt < io.op2.asUInt,io.op1.asSInt < io.op2.asSInt)
 
   val doSub = io.alu === SUB
   val addSub = Mux(doSub,io.op1.asSInt - io.op2.asSInt,io.op1.asSInt + io.op2.asSInt).asBits
 
-  io.res := io.alu.mux(
-    (SLT,SLTU) -> less.asBits.resized,
-    (ADD,SUB) -> addSub,
-    default -> bitsCal
-  )
-
+  when(io.valid){
+    io.res := io.alu.mux(
+        (SLT,SLTU) -> less.asBits.resized,
+        (ADD,SUB) -> addSub,
+        default -> bitsCal
+      )
+  }.otherwise{
+    io.res := B(0,p.Xlen bits)
+  }
 }
