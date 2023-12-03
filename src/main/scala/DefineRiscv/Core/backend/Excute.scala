@@ -41,11 +41,10 @@ case class ExcuteOut(p:coreParameters) extends Bundle{
 
 class Excute(p:coreParameters) extends PrefixComponent{
   import ALU._
-  val io = new Bundle{
-    val excuteIn = slave Stream(DecodeOut(p))
-    val excuteOut = master Stream(ExcuteOut(p))
+  val io = new Bundle {
+    val excuteIn = slave Stream (DecodeOut(p))
+    val excuteOut = master Stream (ExcuteOut(p))
   }
-
   def isMulDiv(ctrl:CtrlSignals): Bool = {
     val res =  ctrl.alu.mux(
       MUL -> True,

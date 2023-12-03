@@ -29,9 +29,6 @@ import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
 import spinal.core._
 import spinal.lib._
 
-
-/* Todo simulation about the whole top */
-
 class top(p:coreParameters) extends PrefixComponent{
 
   val io = new Bundle{
@@ -56,6 +53,5 @@ class top(p:coreParameters) extends PrefixComponent{
 }
 
 object top extends App{
-
   val rtl = new RtlConfig().GenRTL(new top(coreParameters()))
 }
