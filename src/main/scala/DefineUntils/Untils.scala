@@ -72,7 +72,7 @@ object Untils {
     val bools = content.map(_ === data)
     getOneNumber(bools) > 0
   }
-  
+
   /* the Fill building with the same data equals the Repeat */
   def Fill[T <: Data](value : T, times : Int)  = {
     Repeat(value,times)

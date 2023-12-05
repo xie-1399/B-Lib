@@ -9,7 +9,7 @@ import java.text._
 import java.util._
 import spinal.core._
 import spinal.core.sim._
-
+import scala.io.Source
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io
 import scala.collection.mutable.ArrayBuffer
@@ -113,6 +113,18 @@ object Logger {
     logger
   }
 
+  /* read the file into and print the format */
+  def readFile(filePath:String,logIt:Boolean = false) = {
+    /* read the file line by line */
+    val fileSource = Source.fromFile(filePath)
+    if(logIt){
+     for(lines <- fileSource.getLines()){
+       println(lines) /* the file will show in the format */
+     }
+    }
+    fileSource.getLines()
+  }
+
   def logout(content: String, project: String = null, showproject: Boolean = false,
              withTime: Boolean = true, logpath: String = "./results.log", clear: Boolean = false): Unit = {
     val logger = CreateloggerFile(logpath, clear)
@@ -181,10 +193,4 @@ class CustomReporter extends Reporter {
       case _ => // Handle other event types, if necessary
     }
   }
-}
-
-
-object test extends App{
-  val Hex = Logger.HexStringWithWidth("100101",32)
-  Logger.fillWithWordIndex(Hex,32,256,4)
 }
