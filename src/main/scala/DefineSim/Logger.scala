@@ -11,8 +11,7 @@ import spinal.core._
 import spinal.core.sim._
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
-import scala.reflect.io
-import scala.collection.mutable.ArrayBuffer
+import java.nio.file.{Files, Paths}
 
 object Logger {
   /* the print format of the log value*/
@@ -124,6 +123,17 @@ object Logger {
     }
     fileSource.getLines()
   }
+
+  /* like the python os.list dir show the file name under the dir*/
+  def listDir(directoryPath: String): Seq[String] = {
+    val path = Paths.get(directoryPath)
+    val fileNames = Files.list(path)
+      .toArray
+      .map(_.toString)
+
+    fileNames.toSeq
+  }
+
 
   def logout(content: String, project: String = null, showproject: Boolean = false,
              withTime: Boolean = true, logpath: String = "./results.log", clear: Boolean = false): Unit = {

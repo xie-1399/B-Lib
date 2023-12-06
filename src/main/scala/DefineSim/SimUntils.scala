@@ -3,11 +3,9 @@ package DefineSim
 import scala.collection.mutable._
 import scala.util.Random
 import spinal.core._
-import spinal.core.internals.Operator.BitVector
-import spinal.sim._
-import spinal.lib.sim._
 import spinal.core.sim._
 import Logger._
+import scala.sys.process._
 
 object SimUntils {
 
@@ -99,6 +97,13 @@ object SimUntils {
       bin.substring(len - end, len - start)
     }
   }
+
+  /* run the command in the bash */
+  def commandRun(command:String,logIt:Boolean = false) = {
+    val out = command.!! /* run the command */
+    if(logIt) println(out)
+  }
+
 }
 
 object VecSim{

@@ -78,4 +78,15 @@ object Untils {
     Repeat(value,times)
   }
 
+  /* Cat bits in the Order (in the spinal lib is cat(a,b) is b ## a) */
+  object CatInorder {
+    def apply(data: Data*): Bits = apply(data.toList.reverse)
+    def apply[T <: Data](data: Vec[T]): Bits = data.asBits
+
+    def apply[T <: Data](data: Iterable[T]) = {
+      if (data.isEmpty) B(0, 0 bit)
+      else data.map(_.asBits).reduce((a,b) => a ## b)
+    }
+  }
+
 }
