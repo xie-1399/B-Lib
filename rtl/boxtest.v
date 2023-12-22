@@ -1,22 +1,22 @@
-// Generator : SpinalHDL v1.9.3    git head : 029104c77a54c53f1edda327a3bea333f7d65fd9
+// Generator : SpinalHDL v1.9.4    git head : 270018552577f3bb8e5339ee2583c9c22d324215
 // Component : boxtest
-// Git hash  : 7c14a9811803b23fd174e19771486848cab3316e
+// Git hash  : bd65e416e07ef6caf34ca9075f03de3e522f4ea4
 
 `timescale 1ns/1ps
 
 module boxtest (
-  input      [31:0]   a,
-  input      [31:0]   b,
-  input               cin,
-  output     [31:0]   c,
-  output              cout,
-  input               clk
+  input  wire [31:0]   a,
+  input  wire [31:0]   b,
+  input  wire          cin,
+  output wire [31:0]   c,
+  output wire          cout,
+  input  wire          clk
 );
 
   wire       [31:0]   blackBox_c;
   wire                blackBox_cout;
 
-  InlineBlackBoxAdder blackBox (
+  aaaa blackBox (
     .clk  (clk             ), //i
     .a    (a[31:0]         ), //i
     .b    (b[31:0]         ), //i

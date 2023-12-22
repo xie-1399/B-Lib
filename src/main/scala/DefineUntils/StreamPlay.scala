@@ -34,6 +34,7 @@ object StreamPlayer{
       val dataIn = in Bits(10 bits)
       val chain = in Bool()
     }
+    StreamFifo
 
     val readyChain = RegNext(io.chain)
 

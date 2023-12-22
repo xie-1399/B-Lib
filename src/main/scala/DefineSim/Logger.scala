@@ -50,6 +50,17 @@ object Logger {
     }
   }
 
+  /* a very long string split with some width */
+  def StringSplitShow(str: String, num: Int) = {
+    for (idx <- 0 until str.length) {
+      print(str(idx))
+      if ((idx + 1) % num == 0) {
+        print("\t")
+      }
+    }
+    print("\n")
+  }
+
   /* convert the bigInt value to the binary with width */
   def bigintToBinaryStringWithWidth(bigIntValue: BigInt, width: Int): String = {
     val binaryString = bigIntValue.toString(2)

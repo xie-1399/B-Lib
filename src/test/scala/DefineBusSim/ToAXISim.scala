@@ -16,6 +16,7 @@ class ToAXISim extends AnyFunSuite {
 
 
   test("read cmd to axi") {
+
     SIMCFG(compress = true).compile {
       val parameters = BusParameters()
       val dut = new ToAxi4(parameters)

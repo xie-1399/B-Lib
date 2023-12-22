@@ -22,8 +22,8 @@ object FST{
 
 object VCS{
   val flags = VCSFlags(
-    compileFlags = List("-kdb","-cpp g++-4.8","-cc gcc-4.8", "+define+UNIT_DELAY", "+define+no_warning"),
-    elaborateFlags = List("-kdb","-lca","-cpp g++-4.8","-cc gcc-4.8","-LDFLAGS -Wl,--no-as-needed")
+    compileFlags = List("-kdb"),
+    elaborateFlags = List("-kdb","-LDFLAGS -Wl,--no-as-needed")
   )
   val simCfg = SimConfig
     .withVCS(flags)
