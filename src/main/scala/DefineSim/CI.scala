@@ -21,10 +21,19 @@ object FST{
 }
 
 object VCS{
-  val flags = VCSFlags(
+
+  val version = 2016
+
+  val flags = if(version == 2018)VCSFlags(
     compileFlags = List("-kdb"),
     elaborateFlags = List("-kdb","-LDFLAGS -Wl,--no-as-needed")
-  )
+  )else{
+    /* if only gen the wave , no timing checking for the frontend simulation */
+    VCSFlags(
+      compileFlags = List("-kdb", "-cpp g++-4.8", "-cc gcc-4.8", "+define+UNIT_DELAY", "+define+no_warning","+nospecify","+notimingcheck"),
+      elaborateFlags = List("-kdb", "-lca", "-cpp g++-4.8", "-cc gcc-4.8", "-LDFLAGS -Wl,--no-as-needed")
+    )
+  }
   val simCfg = SimConfig
     .withVCS(flags)
     .withFSDBWave
