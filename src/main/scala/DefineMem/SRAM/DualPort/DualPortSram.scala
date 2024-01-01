@@ -9,13 +9,13 @@ import spinal.lib._
 import scala.collection.mutable
 import scala.util.Random
 
-case class sramWR() extends Bundle with IMasterSlave {
-  val RA = UInt(12 bits)
-  val RD = Bits(32 bits)
+case class sramWR(wordCount:Int = 4096 , dataWidth:Int = 32,maskWidth:Int = 4) extends Bundle with IMasterSlave {
+  val RA = UInt(log2Up(wordCount) bits)
+  val RD = Bits(dataWidth bits)
 
-  val WA = UInt(12 bits)
-  val WD = Bits(32 bits)
-  val WM = Bits(4 bits)
+  val WA = UInt(log2Up(wordCount) bits)
+  val WD = Bits(dataWidth bits)
+  val WM = Bits(maskWidth bits)
   val WR = Bool()
   val valid = Bool()
 

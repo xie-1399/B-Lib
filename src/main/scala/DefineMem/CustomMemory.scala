@@ -102,7 +102,7 @@ class CustomMemory[T <: Data](val wordType: HardType[T],
         SRAM.io.AB := address
         SRAM.io.DB := B(data)
         (!useDualPort) generate new Area {
-          SRAM.io.CENB := enable
+          SRAM.io.CENB := !enable
         }
         useDualPort generate new Area {
           SRAM.io.WENB := !enable

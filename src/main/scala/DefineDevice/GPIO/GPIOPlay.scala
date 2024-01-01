@@ -2,7 +2,8 @@ package DefineDevice.GPIO
 
 
 /* the spinal lib has the gpio device
-* the gpio can used as the input Or as the output */
+* the gpio can used as the input Or as the output
+* just test the gpio u*/
 
 import DefineSim.SIMCFG
 import DefineSim.SpinalSim.{PrefixComponent, RtlConfig}
@@ -11,6 +12,8 @@ import spinal.lib._
 import spinal.lib.bus.amba3.apb._
 import spinal.lib.bus.amba3.apb.sim.Apb3Driver
 import spinal.lib.io.TriStateArray
+import scala.collection.mutable
+import scala.util.Random
 
 class GPIOPlay extends PrefixComponent{
   val io = new Bundle{
@@ -45,18 +48,36 @@ object GPIOPlayTester extends App{
   }.doSimUntilVoid{
     dut =>
       dut.clockDomain.forkStimulus(10)
-
       /* just write the pin out */
-      val driver = Apb3Driver(dut.io.bus,dut.clockDomain)
-      driver.write(0x10000008,1)
-      driver.write(0x10000004,0x100) /* write this reg to output the data */
-      dut.clockDomain.waitSampling()
-      println(dut.io.gpio.write.toBigInt)
-      println(dut.io.gpio.writeEnable.toBigInt)
-
-      dut.io.gpio.read #= 0x100
-      dut.clockDomain.waitSampling()
-      println(driver.read(0x10000000))
+      val driver = Apb3Driver(dut.io.bus, dut.clockDomain)
+      val refQueue = mutable.Queue[Int]()
+      var writeCheck = 0
+      var readCheck = 0
+      val write = fork {
+        while (writeCheck < 500) {
+          val data = Random.nextInt(1024)
+          refQueue.enqueue(data)
+          driver.write(0x10000008, 1)
+          driver.write(0x10000004, data)
+          dut.clockDomain.waitSampling()
+          assert(refQueue.dequeue() == dut.io.gpio.write.toBigInt)
+          writeCheck += 1
+        }
+        simSuccess()
+      }
+      val read = fork {
+        write.join()
+        while (readCheck < 500) {
+          val data = Random.nextInt(1024)
+          refQueue.enqueue(data)
+          dut.io.gpio.read #= data
+          dut.clockDomain.waitSampling()
+          assert(driver.read(0x10000000) == data)
+          readCheck += 1
+        }
+        simSuccess()
+      }
+      read.join()
       simSuccess()
   }
 }
