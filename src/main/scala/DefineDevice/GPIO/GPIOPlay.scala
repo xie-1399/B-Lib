@@ -29,8 +29,26 @@ class GPIOPlay extends PrefixComponent{
       gpioCtrl.io.apb -> (0x10000000,4 KiB),
     )
   )
-
 }
+
+class MyGPIOPlay extends PrefixComponent{
+  val io = new Bundle{
+    val bus = slave(Apb3(32, 32))
+    val gpi = in Bits (32 bits)
+    val gpo = out Bits (32 bits)
+  }
+
+  val gpioCtrl = MyApb3Gpio(gpioWidth = 32,withReadSync = true)
+  io.gpi <> gpioCtrl.io.gpi
+  io.gpo <> gpioCtrl.io.gpo
+  val apbDecoder = Apb3Decoder(
+    master = io.bus,
+    slaves = List(
+      gpioCtrl.io.apb -> (0x10000000,4 KiB),
+    )
+  )
+}
+
 
 object GPIOPlay {
   def main(args: Array[String]): Unit = {
@@ -42,8 +60,8 @@ object GPIOPlay {
 object GPIOPlayTester extends App{
   import spinal.core.sim._
 
-  SIMCFG(compress = true).compile{
-    val dut = new GPIOPlay()
+  SIMCFG().compile{
+    val dut = new MyGPIOPlay()
     dut
   }.doSimUntilVoid{
     dut =>
@@ -60,7 +78,7 @@ object GPIOPlayTester extends App{
           driver.write(0x10000008, 1)
           driver.write(0x10000004, data)
           dut.clockDomain.waitSampling()
-          assert(refQueue.dequeue() == dut.io.gpio.write.toBigInt)
+          assert(refQueue.dequeue() == dut.io.gpo.toBigInt)
           writeCheck += 1
         }
         simSuccess()
@@ -70,7 +88,7 @@ object GPIOPlayTester extends App{
         while (readCheck < 500) {
           val data = Random.nextInt(1024)
           refQueue.enqueue(data)
-          dut.io.gpio.read #= data
+          dut.io.gpi #= data
           dut.clockDomain.waitSampling()
           assert(driver.read(0x10000000) == data)
           readCheck += 1
