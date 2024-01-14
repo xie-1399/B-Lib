@@ -55,7 +55,7 @@ class FIFOSim extends AnyFunSuite {
           simSuccess()
         }
 
-        flush()
+        monitor()
 
     }
   }

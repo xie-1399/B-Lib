@@ -19,18 +19,12 @@ class FIFO[T<:Data](gen:HardType[T],val entries:Int,withFlush:Boolean = false) e
     val flush = withFlush.generate(in Bool())
     val flushValue = withFlush.generate(in (gen))
     val flushDone = withFlush.generate(out Bool())
-    val count = out UInt(log2Up(entries) bits) /* show the number of element in the fifo */
   }
 
   val enq_ptr = Counter(entries).init(0)
   val deq_ptr = Counter(entries).init(0)
-  val counter = CounterUpDown(
-    stateCount = entries,
-    incWhen = io.enqueue.fire,
-    decWhen = io.dequeue.fire
-  )
 
-  val queue = MemOperation(gen,entries)
+  val queue = Mem(gen,entries)
   if(withFlush){io.flushDone := RegNext(MemOperation.flush(io.flush,queue,io.flushValue))}
   val full_empty = RegInit(False)
   io.dequeue.payload := queue.readAsync(deq_ptr)
@@ -56,7 +50,6 @@ class FIFO[T<:Data](gen:HardType[T],val entries:Int,withFlush:Boolean = false) e
 
   io.enqueue.ready := !full
   io.dequeue.valid := !empty
-  io.count := counter.value
 
   if(withFlush) {when(io.flush) {io.enqueue.ready := False;io.dequeue.valid := False}}
 }
